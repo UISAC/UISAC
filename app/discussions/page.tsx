@@ -5,8 +5,8 @@ export default async function DiscussionsPage() {
   let questions: DbQuestion[] = [];
   try {
     questions = await getQuestions();
-  } catch {
-    // Supabase not yet configured — page still renders with empty state
+  } catch (err) {
+    console.error("[DiscussionsPage] getQuestions failed:", err);
   }
   return <DiscussionsClient initialQuestions={questions} />;
 }
