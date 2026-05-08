@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(node_modules/.bin/tsc --noEmit)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(grep -r \"firebase\\\\|firestore\\\\|auth\\\\|getAuth\\\\|initializeApp\\\\|getFirestore\" /Users/harutsargsyan/Desktop/UISAC --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.jsx\" --include=\"*.json\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\")"
     ]
   }
 }
