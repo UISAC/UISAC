@@ -65,6 +65,7 @@ export default function DiscussionsClient({
   const [askText, setAskText] = useState("");
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Merge initial questions with localStorage upvote state on mount
   useEffect(() => {
@@ -106,9 +107,11 @@ export default function DiscussionsClient({
             q.id === optimistic.id ? { ...saved, upvoted: false } : q,
           ),
         );
-      } catch {
-        // Revert on failure
+      } catch (err) {
         setQuestions((prev) => prev.filter((q) => q.id !== optimistic.id));
+        const msg = err instanceof Error ? err.message : "Failed to post question";
+        console.error("[createQuestion]", msg);
+        setSubmitError(msg);
       }
     });
   }
@@ -222,7 +225,7 @@ export default function DiscussionsClient({
               questions help the whole community.
             </p>
             <button
-              onClick={() => setShowAskModal(true)}
+              onClick={() => { setShowAskModal(true); setSubmitError(null); }}
               className="mt-8 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#4e2a84] to-[#6f58a8] px-8 py-4 text-xl font-bold text-white shadow-[0_4px_20px_rgba(78,42,132,0.35)] transition hover:scale-[1.02] hover:shadow-[0_6px_28px_rgba(78,42,132,0.45)] active:scale-[0.98]"
             >
               <PlusCircleIcon className="h-6 w-6" />
@@ -319,11 +322,17 @@ export default function DiscussionsClient({
               rows={5}
               className="mt-5 w-full resize-none rounded-2xl border border-[#d4c7e9] bg-[#f8f5fd] p-4 text-base text-[#2f2147] placeholder:text-[#b0a0cc] focus:outline-none focus:ring-2 focus:ring-[#6f58a8]/40"
             />
+            {submitError && (
+              <p className="mt-4 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-600">
+                {submitError}
+              </p>
+            )}
             <div className="mt-5 flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowAskModal(false);
                   setAskText("");
+                  setSubmitError(null);
                 }}
                 className="rounded-full px-6 py-3 text-base font-semibold text-[#5b4b78] transition hover:bg-[#e9e2f3]"
               >
