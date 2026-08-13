@@ -46,12 +46,15 @@ revoke execute on function public.hook_restrict_signup_by_email_domain from auth
 
 -- Defense-in-depth: require northwestern domain on event submission too,
 -- on top of the existing auth.uid() = user_id check.
+-- TEMPORARILY DISABLED: the "and public.is_northwestern()" clause is dropped
+-- below while sign-in is open to any Google account. Restore it (and the two
+-- discussions policies further down) once the Northwestern-only gate is back.
 drop policy if exists "Authenticated users can submit pending events" on public.events;
 
 create policy "Authenticated users can submit pending events"
   on public.events for insert
   to authenticated
-  with check (auth.uid() = user_id and status = 'pending' and public.is_northwestern());
+  with check (auth.uid() = user_id and status = 'pending');
 
 -- ─── Discussions schema (new) ───────────────────────────────────────────────
 
@@ -80,15 +83,21 @@ create policy "Public can read replies"
   on public.replies for select
   using (true);
 
+-- TEMPORARILY DISABLED: public.is_northwestern() check dropped from both
+-- policies below while sign-in is open to any Google account.
+drop policy if exists "Northwestern users can ask questions" on public.questions;
+
 create policy "Northwestern users can ask questions"
   on public.questions for insert
   to authenticated
-  with check (public.is_northwestern());
+  with check (true);
+
+drop policy if exists "Northwestern users can reply" on public.replies;
 
 create policy "Northwestern users can reply"
   on public.replies for insert
   to authenticated
-  with check (public.is_northwestern());
+  with check (true);
 
 -- security definer so upvoting stays anonymous/login-free, matching the
 -- existing localStorage-dedup design in discussions-client.tsx.
