@@ -211,6 +211,7 @@
 
   body {
     @apply text-foreground font-sans;
+    min-height: 100dvh;
     background: var(--gradient-page);
   }
 

@@ -1,15 +1,103 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "../components/auth-provider";
+
+// Common Northwestern (Evanston) campus locations, offered as autosuggest.
+// Free text is always accepted — this just speeds up the common case.
+const CAMPUS_LOCATIONS = [
+  "Norris University Center",
+  "Norris Aquatics Center",
+  "University Library",
+  "Technological Institute (Tech)",
+  "Fisk Hall",
+  "Kresge Centennial Hall",
+  "Annie May Swift Hall",
+  "Harris Hall",
+  "Kellogg Global Hub",
+  "McCormick Foundation Center",
+  "Frances Searle Building",
+  "Ryan Fieldhouse",
+  "Welsh-Ryan Arena",
+  "Patten Gymnasium",
+  "Segal Visitors Center",
+  "Deering Meadow",
+  "The Arch",
+  "Foster-Walker Complex (Plex)",
+  "Sargent Hall",
+  "Allison Hall",
+  "Bobb-McCulloch Hall",
+  "Hobart House",
+  "Willard Residential College",
+  "Shepard Residential College",
+  "Slivka Residential College",
+  "Chapin Hall",
+  "1835 Hinman",
+  "International Studies Residential College",
+  "Buffett Institute for Global Affairs",
+];
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
 
+const DAYS_IN_MONTH: Record<string, number> = {
+  January: 31, February: 29, March: 31, April: 30, May: 31, June: 30,
+  July: 31, August: 31, September: 30, October: 31, November: 30, December: 31,
+};
+
 const EVENT_TYPES = ["Social", "Academic", "Cultural", "Workshop", "Networking", "Other"];
+
+// "3 PM", "3:00 PM", "3:00 PM – 5:30 PM", "15:00", "15:00-17:30"
+const TIME_PATTERN =
+  /^((0?[1-9]|1[0-2])(:[0-5]\d)?\s*[AaPp][Mm](\s*(-|–|to)\s*(0?[1-9]|1[0-2])(:[0-5]\d)?\s*[AaPp][Mm])?|([01]?\d|2[0-3]):[0-5]\d(\s*(-|–|to)\s*([01]?\d|2[0-3]):[0-5]\d)?)$/;
+
+type FormState = {
+  title: string;
+  copy: string;
+  month: string;
+  day: string;
+  time: string;
+  place: string;
+  type: string;
+};
+
+type FieldErrors = Partial<Record<keyof FormState, string>>;
+
+function validate(form: FormState): FieldErrors {
+  const errors: FieldErrors = {};
+
+  const title = form.title.trim();
+  if (!title) errors.title = "Give the event a title.";
+  else if (title.length < 3) errors.title = "Title's too short to be useful.";
+  else if (title.length > 120) errors.title = "Keep it under 120 characters.";
+
+  const copy = form.copy.trim();
+  if (!copy) errors.copy = "Tell people what to expect.";
+  else if (copy.length < 10) errors.copy = "Add a bit more detail (10+ characters).";
+  else if (copy.length > 600) errors.copy = "Keep it under 600 characters.";
+
+  const day = Number(form.day);
+  const maxDay = DAYS_IN_MONTH[form.month] ?? 31;
+  if (!form.day.trim()) errors.day = "Required.";
+  else if (!Number.isInteger(day) || day < 1 || day > maxDay) {
+    errors.day = `Enter a day between 1 and ${maxDay} for ${form.month}.`;
+  }
+
+  const time = form.time.trim();
+  if (!time) errors.time = "Required.";
+  else if (!TIME_PATTERN.test(time)) {
+    errors.time = "Use a format like “3:00 PM” or “3:00 PM – 5:30 PM”.";
+  }
+
+  const place = form.place.trim();
+  if (!place) errors.place = "Required.";
+  else if (place.length < 2) errors.place = "That doesn't look like a location.";
+
+  return errors;
+}
 
 type Props = {
   onClose: () => void;
@@ -21,8 +109,10 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState(false);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     title: "",
     copy: "",
     month: "January",
@@ -32,13 +122,22 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
     type: "Social",
   });
 
-  function set(field: string, value: string) {
+  function set(field: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
+    if (touched) {
+      setFieldErrors((prev) => validate({ ...form, [field]: value }));
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
+
+    setTouched(true);
+    const errors = validate(form);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
     setError(null);
     setSubmitting(true);
 
@@ -105,24 +204,26 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4.5 px-7 py-6">
-            <Field label="Event title">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4.5 px-7 py-6">
+            <Field label="Event title" error={fieldErrors.title}>
               <input
-                required
                 value={form.title}
                 onChange={(e) => set("title", e.target.value)}
                 placeholder="e.g. UISAC Finance Career Panel"
+                maxLength={120}
+                aria-invalid={!!fieldErrors.title}
                 className="input-style"
               />
             </Field>
 
-            <Field label="Description">
+            <Field label="Description" error={fieldErrors.copy}>
               <textarea
-                required
                 rows={3}
                 value={form.copy}
                 onChange={(e) => set("copy", e.target.value)}
                 placeholder="Tell people what to expect…"
+                maxLength={600}
+                aria-invalid={!!fieldErrors.copy}
                 className="input-style resize-none"
               />
             </Field>
@@ -140,37 +241,35 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
                 </select>
               </Field>
 
-              <Field label="Day">
+              <Field label="Day" error={fieldErrors.day}>
                 <input
-                  required
                   type="number"
                   min={1}
-                  max={31}
+                  max={DAYS_IN_MONTH[form.month] ?? 31}
                   value={form.day}
                   onChange={(e) => set("day", e.target.value)}
                   placeholder="e.g. 26"
+                  aria-invalid={!!fieldErrors.day}
                   className="input-style"
                 />
               </Field>
             </div>
 
-            <Field label="Time">
+            <Field label="Time" error={fieldErrors.time}>
               <input
-                required
                 value={form.time}
                 onChange={(e) => set("time", e.target.value)}
                 placeholder="e.g. 3:00 PM – 5:30 PM"
+                aria-invalid={!!fieldErrors.time}
                 className="input-style"
               />
             </Field>
 
-            <Field label="Location">
-              <input
-                required
+            <Field label="Location" error={fieldErrors.place}>
+              <LocationField
                 value={form.place}
-                onChange={(e) => set("place", e.target.value)}
-                placeholder="e.g. Norris University Center"
-                className="input-style"
+                onChange={(v) => set("place", v)}
+                error={!!fieldErrors.place}
               />
             </Field>
 
@@ -215,17 +314,114 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
   );
 }
 
+function LocationField({
+  value,
+  onChange,
+  error,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  error: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [highlighted, setHighlighted] = useState(0);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const matches = useMemo(() => {
+    const q = value.trim().toLowerCase();
+    if (!q) return CAMPUS_LOCATIONS.slice(0, 6);
+    return CAMPUS_LOCATIONS.filter((loc) =>
+      loc.toLowerCase().includes(q),
+    ).slice(0, 6);
+  }, [value]);
+
+  function selectMatch(loc: string) {
+    onChange(loc);
+    setOpen(false);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!open || matches.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlighted((i) => (i + 1) % matches.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlighted((i) => (i - 1 + matches.length) % matches.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      selectMatch(matches[highlighted]);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div className="relative">
+      <input
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+          setHighlighted(0);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          // let a click on a suggestion register before the list closes
+          closeTimeout.current = setTimeout(() => setOpen(false), 120);
+        }}
+        onKeyDown={handleKeyDown}
+        placeholder="e.g. Norris University Center"
+        aria-invalid={error}
+        aria-expanded={open && matches.length > 0}
+        aria-autocomplete="list"
+        role="combobox"
+        autoComplete="off"
+        className="input-style"
+      />
+      {open && matches.length > 0 && (
+        <ul className="absolute z-10 mt-1.5 w-full overflow-hidden rounded-2xl border-[1.5px] border-border bg-card shadow-[var(--shadow-lift)]">
+          {matches.map((loc, i) => (
+            <li key={loc}>
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  if (closeTimeout.current) clearTimeout(closeTimeout.current);
+                  selectMatch(loc);
+                }}
+                className={`block w-full px-4 py-2.5 text-left text-[15px] transition ${
+                  i === highlighted
+                    ? "bg-[#4e2a84]/10 text-[#3f216d]"
+                    : "text-foreground hover:bg-foreground/5"
+                }`}
+              >
+                {loc}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function Field({
   label,
+  error,
   children,
 }: {
   label: string;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-[13px] font-bold text-foreground">{label}</label>
       {children}
+      {error && (
+        <p className="text-[13px] font-medium text-[#b0402a]">{error}</p>
+      )}
     </div>
   );
 }
