@@ -9,7 +9,8 @@ import {
 } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { isAdmin, isNorthwestern } from "@/lib/auth";
+import { isAdmin } from "@/lib/auth";
+// TEMPORARILY DISABLED (see applySession below): import { isNorthwestern } from "@/lib/auth";
 
 type AuthCtx = {
   user: User | null;
@@ -29,8 +30,9 @@ const AuthContext = createContext<AuthCtx>({
   signOut: async () => {},
 });
 
-const NON_NORTHWESTERN_ERROR =
-  "Only Northwestern University (@u.northwestern.edu) accounts are allowed.";
+// TEMPORARILY DISABLED (see applySession below):
+// const NON_NORTHWESTERN_ERROR =
+//   "Only Northwestern University (@u.northwestern.edu) accounts are allowed.";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -40,17 +42,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function applySession(session: Session | null) {
+      // TEMPORARILY DISABLED: northwestern-only client-side gate.
       // Defense-in-depth: the Auth Hook blocks non-northwestern signups at
       // creation time, but can't retroactively block an account that
       // already existed before the hook was enabled.
-      if (session?.user && !isNorthwestern(session.user.email)) {
-        await supabase.auth.signOut();
-        setAuthError(NON_NORTHWESTERN_ERROR);
-        setSession(null);
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+      // if (session?.user && !isNorthwestern(session.user.email)) {
+      //   await supabase.auth.signOut();
+      //   setAuthError(NON_NORTHWESTERN_ERROR);
+      //   setSession(null);
+      //   setUser(null);
+      //   setLoading(false);
+      //   return;
+      // }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
