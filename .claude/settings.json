@@ -1,0 +1,9 @@
+{
+  "enabledPlugins": {
+    "supabase@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "impeccable@impeccable": true
+  }
+}

@@ -4,43 +4,71 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --background: #faf6ee;
+  --foreground: #241b2e;
+  --card: #fffdf8;
+  --card-foreground: #241b2e;
+  --popover: #fffdf8;
+  --popover-foreground: #241b2e;
   --primary: #4e2a84;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #2f2147;
-  --muted: #f0ebf7;
-  --muted-foreground: #5b4b78;
-  --accent: #e9e2f3;
+  --primary-foreground: #fffdf8;
+  --secondary: #f1e8d8;
+  --secondary-foreground: #241b2e;
+  --muted: #f1e8d8;
+  --muted-foreground: rgba(36, 27, 46, 0.6);
+  --accent: #f4eefa;
   --accent-foreground: #4e2a84;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --destructive: #b0402a;
+  --destructive-foreground: #fdece5;
+  --border: rgba(36, 27, 46, 0.14);
+  --divider: rgba(36, 27, 46, 0.12);
+  --divider-thin: rgba(36, 27, 46, 0.09);
   --input: transparent;
-  --input-background: #f3f3f5;
+  --input-background: #fffdf8;
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --ring: #4e2a84;
+  --success: #2c7a4b;
+  --success-bg: #eaf5ee;
+  --success-border: #a8cdb2;
+
+  /* warm companions — sticky-note / washi-tape accents on the purple anchor */
+  --sun: #f6b93b;
+  --sun-foreground: #3a2705;
+  --coral: #ff7a5c;
+  --coral-foreground: #3d1408;
+  --sky: #4fb2c4;
+  --sky-foreground: #062b30;
+
+  --chart-1: #4e2a84;
+  --chart-2: #7d54ac;
+  --chart-3: #f6b93b;
+  --chart-4: #ff7a5c;
+  --chart-5: #2c7a4b;
+  --sidebar: #fffdf8;
+  --sidebar-foreground: #241b2e;
   --sidebar-primary: #4e2a84;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-primary-foreground: #fffdf8;
+  --sidebar-accent: #f1e8d8;
+  --sidebar-accent-foreground: #241b2e;
+  --sidebar-border: rgba(36, 27, 46, 0.14);
+  --sidebar-ring: #4e2a84;
+
+  /* soft, warm-tinted "stacked paper" shadows */
+  --shadow-soft: 0 1px 2px rgba(78, 42, 132, 0.06), 0 12px 28px -12px rgba(78, 42, 132, 0.22);
+  --shadow-lift: 0 4px 8px rgba(78, 42, 132, 0.08), 0 20px 40px -14px rgba(78, 42, 132, 0.28);
+
+  /* site-wide page gradient: near-white cream at top, warming into a
+     richer sand/tan tone by the bottom of each page's own scroll length */
+  --gradient-page: linear-gradient(
+    to bottom,
+    #fdfbf5 0%,
+    #faf6ee 22%,
+    #f6efdf 48%,
+    #efe2c9 74%,
+    #e6d6b4 100%
+  );
 }
 
 .dark {
@@ -98,19 +126,31 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-divider: var(--divider);
+  --color-divider-thin: var(--divider-thin);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
   --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --color-sun: var(--sun);
+  --color-sun-foreground: var(--sun-foreground);
+  --color-coral: var(--coral);
+  --color-coral-foreground: var(--coral-foreground);
+  --color-sky: var(--sky);
+  --color-sky-foreground: var(--sky-foreground);
+  --radius-sm: 14px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 40px;
+  --radius-pill: 999px;
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -119,7 +159,49 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: var(--font-nunito);
+  --font-sans: var(--font-archivo);
+}
+
+@layer components {
+  .input-style {
+    @apply w-full rounded-2xl border-[1.5px] border-border bg-card px-4 py-3 text-[15px] text-foreground outline-none transition focus:border-[#4e2a84] focus:ring-2 focus:ring-[#4e2a84]/25;
+  }
+
+  /* a short strip of washi tape, for pinning cards to the "board" */
+  .tape {
+    position: absolute;
+    height: 1.6rem;
+    width: 3.4rem;
+    opacity: 0.85;
+    box-shadow: 0 1px 1px rgba(36, 27, 46, 0.12);
+  }
+
+  /* the site's one authored moment: pillar cards settle onto the
+     board like a note being pinned up, each landing at its own tilt */
+  .pin-settle {
+    animation: pin-settle 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pin-settle {
+      animation: none;
+    }
+  }
+}
+
+@keyframes pin-settle {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.92) rotate(var(--settle-rot, 0deg));
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(3px) scale(1.03) rotate(var(--settle-rot, 0deg));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(var(--settle-rot, 0deg));
+  }
 }
 
 @layer base {
@@ -128,11 +210,23 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply text-foreground font-sans;
+    background: var(--gradient-page);
   }
 
   html {
     font-size: var(--font-size);
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  :focus-visible {
+    outline: 2.5px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   h1 {

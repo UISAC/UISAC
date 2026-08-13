@@ -40,3 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 AGENTS.md
+
+# impeccable working state (QA screenshots, session data) — design.json sidecar is tracked
+/.impeccable/review/
+/.impeccable/critique/
+/.impeccable/live/
+/.impeccable/mocks/

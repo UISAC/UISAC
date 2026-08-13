@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-10T00:00:00Z",
+  "title": "Design System: UISAC",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Northwestern Purple",
+        "canonical": "#4e2a84",
+        "tonalRamp": [
+          "#1f1136",
+          "#2c1852",
+          "#3a1f6d",
+          "#4e2a84",
+          "#7d54ac",
+          "#a683c6",
+          "#d2c1e6",
+          "#f4eefa"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Warm Sand",
+        "canonical": "#f1e8d8",
+        "tonalRamp": [
+          "#4a3c1f",
+          "#7a6234",
+          "#a9894c",
+          "#d1b57e",
+          "#e6d2ac",
+          "#f1e8d8",
+          "#f7f0e6",
+          "#fbf7f0"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Pale Lavender",
+        "canonical": "#f4eefa",
+        "tonalRamp": [
+          "#3f216d",
+          "#5f3a94",
+          "#8862b5",
+          "#b39ed3",
+          "#d2c1e6",
+          "#e6dcf2",
+          "#f4eefa",
+          "#fbf8fd"
+        ]
+      },
+      "sun": {
+        "role": "tertiary",
+        "displayName": "Marigold Sun",
+        "canonical": "#f6b93b",
+        "tonalRamp": [
+          "#3a2705",
+          "#5c3d0a",
+          "#7a5309",
+          "#a37613",
+          "#d19a25",
+          "#f6b93b",
+          "#fad584",
+          "#fef1de"
+        ]
+      },
+      "coral": {
+        "role": "tertiary",
+        "displayName": "Coral",
+        "canonical": "#ff7a5c",
+        "tonalRamp": [
+          "#3d1408",
+          "#5e2210",
+          "#7a2d16",
+          "#a63d1e",
+          "#d95336",
+          "#ff7a5c",
+          "#ffab94",
+          "#fff0eb"
+        ]
+      },
+      "sky": {
+        "role": "tertiary",
+        "displayName": "Sky Teal",
+        "canonical": "#4fb2c4",
+        "tonalRamp": [
+          "#062b30",
+          "#0d4750",
+          "#146070",
+          "#1f7f8c",
+          "#3699a8",
+          "#4fb2c4",
+          "#8ccdd8",
+          "#eaf6f8"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "#faf6ee",
+        "tonalRamp": [
+          "#241b2e",
+          "#453b52",
+          "#6b6070",
+          "#948a94",
+          "#c2b9b8",
+          "#e6ddd0",
+          "#faf6ee",
+          "#fffdf8"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Ink Plum",
+        "canonical": "#241b2e",
+        "tonalRamp": [
+          "#0f0a15",
+          "#1a1220",
+          "#241b2e",
+          "#3a2e46",
+          "#544763",
+          "#736683",
+          "#9a8fa8",
+          "#c9c1d3"
+        ]
+      },
+      "destructive": {
+        "role": "neutral",
+        "displayName": "Destructive Clay",
+        "canonical": "#b0402a",
+        "tonalRamp": [
+          "#3d150a",
+          "#5e2110",
+          "#7c2b16",
+          "#a3391f",
+          "#b0402a",
+          "#d9724f",
+          "#f0a488",
+          "#fdece5"
+        ]
+      },
+      "success": {
+        "role": "neutral",
+        "displayName": "Success Green",
+        "canonical": "#2c7a4b",
+        "tonalRamp": [
+          "#0f2b1c",
+          "#1a442d",
+          "#215a3b",
+          "#2c7a4b",
+          "#3f9c65",
+          "#6fbd8b",
+          "#a8cdb2",
+          "#eaf5ee"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero H1s on Home, About, Calendar, Tax Filing, Auth \u2014 always inline-overridden to extrabold at 2.6-3.9rem."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headers within a page."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and list-item titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraph copy, informally capped 52-75ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Nav items, buttons, badges, form labels \u2014 always bold."
+      }
+    },
+    "shadows": [
+      {
+        "name": "soft",
+        "value": "0 1px 2px rgba(78,42,132,0.06), 0 12px 28px -12px rgba(78,42,132,0.22)",
+        "purpose": "Resting-state depth on cards, buttons, pillar tiles."
+      },
+      {
+        "name": "lift",
+        "value": "0 4px 8px rgba(78,42,132,0.08), 0 20px 40px -14px rgba(78,42,132,0.28)",
+        "purpose": "Hover/active state on cards and primary CTAs, paired with a small upward translate."
+      }
+    ],
+    "motion": [
+      {
+        "name": "pin-settle",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1) 0.7s both",
+        "purpose": "The one authored entrance animation: pillar/feature cards translate+scale+hold-rotation in as if pinned to a board. Staggered ~90ms per card. Respects prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main CTA button, pill-shaped, purple fill.",
+      "html": "<button class=\"ds-btn-primary\">Learn More</button>",
+      "css": ".ds-btn-primary { background: #4e2a84; color: #fffdf8; border: none; border-radius: 999px; padding: 16px 32px; font-family: Archivo, system-ui, sans-serif; font-size: 16px; font-weight: 700; box-shadow: 0 1px 2px rgba(78,42,132,0.06), 0 12px 28px -12px rgba(78,42,132,0.22); transition: background 0.2s, transform 0.2s, box-shadow 0.2s; cursor: pointer; } .ds-btn-primary:hover { background: #3f216d; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(78,42,132,0.08), 0 20px 40px -14px rgba(78,42,132,0.28); } .ds-btn-primary:focus-visible { outline: 2.5px solid #4e2a84; outline-offset: 2px; border-radius: 4px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary CTA, transparent with purple-tinted border.",
+      "html": "<button class=\"ds-btn-ghost\">Our Mission</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #241b2e; border: 2px solid rgba(78,42,132,0.25); border-radius: 999px; padding: 16px 32px; font-family: Archivo, system-ui, sans-serif; font-size: 16px; font-weight: 700; transition: background 0.2s, border-color 0.2s; cursor: pointer; } .ds-btn-ghost:hover { border-color: rgba(78,42,132,0.5); background: rgba(78,42,132,0.05); }"
+    },
+    {
+      "name": "Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Pill-shaped nav link, active vs inactive state.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item--active\" href=\"#\">Home</a><a class=\"ds-nav-item\" href=\"#\">About</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 4px; } .ds-nav-item { border-radius: 999px; padding: 10px 18px; font-family: Archivo, system-ui, sans-serif; font-size: 15px; font-weight: 700; text-decoration: none; color: rgba(36,27,46,0.7); transition: background 0.2s, color 0.2s; } .ds-nav-item:hover { background: rgba(78,42,132,0.08); color: #4e2a84; } .ds-nav-item--active { background: #4e2a84; color: #fffdf8; }"
+    },
+    {
+      "name": "Pillar Card",
+      "kind": "card",
+      "refersTo": "card-pillar",
+      "description": "Signature homepage card: tinted background, icon chip, washi-tape pin, slight rotation.",
+      "html": "<div class=\"ds-pillar-wrap\"><span class=\"ds-tape\" aria-hidden=\"true\"></span><div class=\"ds-pillar-card\"><span class=\"ds-icon-chip\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\"><path d=\"M3 11l18-7-7 18-3-8-8-3z\"/></svg></span><h3 class=\"ds-pillar-title\">Advocacy</h3><p class=\"ds-pillar-desc\">We represent international student concerns directly to university administration.</p></div></div>",
+      "css": ".ds-pillar-wrap { position: relative; display: inline-block; } .ds-tape { position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-3deg); height: 1.6rem; width: 3.4rem; background: rgba(246,185,59,0.7); opacity: 0.85; box-shadow: 0 1px 1px rgba(36,27,46,0.12); } .ds-pillar-card { background: #f4eefa; border-radius: 28px; padding: 28px; box-shadow: 0 1px 2px rgba(78,42,132,0.06), 0 12px 28px -12px rgba(78,42,132,0.22); transition: transform 0.2s, box-shadow 0.2s; } .ds-pillar-card:hover { transform: translateY(-4px); box-shadow: 0 4px 8px rgba(78,42,132,0.08), 0 20px 40px -14px rgba(78,42,132,0.28); } .ds-icon-chip { display: grid; place-items: center; height: 48px; width: 48px; border-radius: 16px; background: #4e2a84; color: #fffdf8; margin-bottom: 20px; } .ds-pillar-title { font-family: Archivo, system-ui, sans-serif; font-weight: 800; font-size: 18px; color: #241b2e; margin: 0 0 8px; } .ds-pillar-desc { font-family: Archivo, system-ui, sans-serif; font-size: 15px; line-height: 1.6; color: rgba(36,27,46,0.7); margin: 0; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-style",
+      "description": "Standard form input with focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Type here\" />",
+      "css": ".ds-input { width: 100%; border-radius: 20px; border: 1.5px solid rgba(36,27,46,0.14); background: #fffdf8; padding: 12px 16px; font-family: Archivo, system-ui, sans-serif; font-size: 15px; color: #241b2e; outline: none; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input:focus { border-color: #4e2a84; box-shadow: 0 0 0 2px rgba(78,42,132,0.25); }"
+    },
+    {
+      "name": "Flat Card (Operate mode)",
+      "kind": "card",
+      "refersTo": "card-flat",
+      "description": "Unrotated, tape-free card used on Admin/Auth by deliberate Operate-mode restraint. Every other page (including Discussions) now carries tape and rotation on its cards.",
+      "html": "<article class=\"ds-flat-card\"><h2 class=\"ds-flat-title\">Event approvals</h2><p class=\"ds-flat-desc\">Review and approve community-submitted events.</p></article>",
+      "css": ".ds-flat-card { background: #fffdf8; border-radius: 24px; padding: 24px; box-shadow: 0 1px 2px rgba(78,42,132,0.06), 0 12px 28px -12px rgba(78,42,132,0.22); } .ds-flat-title { font-family: Archivo, system-ui, sans-serif; font-weight: 800; font-size: 18px; color: #241b2e; margin: 0 0 4px; } .ds-flat-desc { font-family: Archivo, system-ui, sans-serif; font-size: 15px; color: rgba(36,27,46,0.68); margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Campus Bulletin Board",
+    "overview": "UISAC reads like a well-kept student-org flyer wall: warm cream paper, rounded sticker-shaped cards, and strips of washi tape pinning things in place, anchored throughout by Northwestern purple. The world is casual and hand-arranged rather than gridded and corporate \u2014 cards sit at a slight tilt as if pressed onto a board, icons are drawn as simple line marks rather than photographic or skeuomorphic, and color shows up as warm companion accents (sun, coral, sky) doing the job sticky-notes and marker highlights would do on a real board.\n\nThe bulletin-board device is now applied at full strength across all five Persuade/Read marketing pages: Home (hero photo frame plus four staggered, rotated, tape-pinned pillar cards with a pin-settle entrance animation), About (mission/vision cards, sponsor block), Tax Filing (tape-pinned disclaimer card, all four numbered steps carrying an alternating-rotation tape accent cycling through the full warm/purple palette, rotated deadline/forms cards, a tape accent on the FAQ heading, and a rotated tape-pinned \"More resources\" card), Calendar (every event row carrying a visible alternating \u00b11\u00b0 rotation plus a tape accent cycling through sun/coral/sky), and Discussions (every question card carrying a companion-colored tape accent plus a lighter \u00b10.6\u00b0 rotation, dialed back from the other pages' \u00b11\u20132\u00b0 since these cards contain an inline expandable reply composer). Admin and Auth drop the motif completely by design: flat, unrotated, untaped cards on the same warm/purple palette, a deliberate Operate-mode restraint, not an inconsistency to fix.",
+    "keyCharacteristics": [
+      "Northwestern purple (#4e2a84) as the fixed, non-swappable anchor color across every surface",
+      "Warm cream paper background (#faf6ee) with off-white card surfaces (#fffdf8), never stark white or dark",
+      "Generously rounded geometry (14-40px radii, pill buttons/nav) \u2014 no sharp corners anywhere",
+      "Washi-tape and slight-rotation 'pinned to a board' motif, present across all five Persuade/Read pages (Home, About, Calendar, Tax Filing, Discussions — the last at a lighter ±0.6° given its inline reply composer); absent by design on Admin and Auth (Operate mode)",
+      "lucide-react line icons (consistent ~2.25 stroke weight) as the sole icon system \u2014 no glyph/emoji icons, no bare colored-square placeholders"
+    ],
+    "rules": [
+      {
+        "name": "The Fixed Anchor Rule",
+        "body": "Northwestern Purple (#4e2a84) is a brand commitment, not a swappable design token \u2014 it appears identically across every page and mode, light or dark accent variations aside.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Warm Companion Per Surface Rule",
+        "body": "Each of the four homepage pillars (and the page it links to) claims exactly one warm companion color as its accent \u2014 sun for events, coral for tax filing, sky for Q&A, purple itself for advocacy. A page's tape, icon-chip background, and badge tints all draw from that same single companion; companions are not mixed within one card.",
+        "section": "colors"
+      },
+      {
+        "name": "The Extrabold-Only Headline Rule",
+        "body": "Every headline-role heading in the built product uses weight 800 (extrabold); there is no medium-weight headline in practice, even though the base h1-h4 tag rules in globals.css default to --font-weight-medium (500) \u2014 page components consistently override that base with font-extrabold inline.",
+        "section": "typography"
+      },
+      {
+        "name": "The Purple-Tinted Shadow Rule",
+        "body": "Both shadow tokens are tinted with the primary purple (rgba(78,42,132,...)), never neutral black \u2014 depth reads as warm, not as generic UI chrome.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep Northwestern Purple (#4e2a84) as the fixed anchor on every surface, including the two calmer Operate-mode pages.",
+      "Do use pill radius (999px) for every button and nav item, and the 14-40px radius scale for everything else \u2014 no sharp corners.",
+      "Do tint shadows with purple (rgba(78,42,132,...)) rather than neutral black.",
+      "Do pair one warm companion color (sun/coral/sky) per topic area (events/tax/Q&A) consistently across icon chip, tape, and badge tint within that surface.",
+      "Do use lucide-react line icons at a consistent ~2.25 stroke weight; do not mix in glyph or emoji icons.",
+      "Do keep Admin and Auth flat, unrotated, and tape-free \u2014 Operate-mode restraint is intentional, not an oversight to 'fix' toward Home's density.",
+      "Do apply the tape/rotation motif consistently across all Persuade/Read marketing pages (Home, About, Calendar, Tax Filing, Discussions) now that the density gap between them has been closed."
+    ],
+    "donts": [
+      "Don't apply the tape/rotation bulletin-board motif inside Admin or Auth; those two surfaces are deliberately calmer tools, not marketing surfaces.",
+      "Don't introduce a second display typeface or a monospace/serif face; Archivo is the only typeface in the shipped system.",
+      "Don't use pure white or pure black; every neutral is a warm cream (#faf6ee/#fffdf8) or ink-plum (#241b2e) tint.",
+      "Don't rotate Discussions' question cards as aggressively as Home/Calendar's \u00b11\u20132\u00b0; keep it at the documented \u00b10.6\u00b0 so the inline reply composer stays comfortable once a card is expanded."
+    ]
+  }
+}

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronUp, MessageCircle, Search, Plus } from "lucide-react";
+
+const CARD_TAPE = ["bg-[#f6b93b]/70", "bg-[#ff7a5c]/70", "bg-[#4fb2c4]/70"];
 import {
   createQuestion,
   createReply,
@@ -8,6 +12,7 @@ import {
   type DbQuestion,
   type DbReply,
 } from "./actions";
+import { useAuth } from "../components/auth-provider";
 
 // ─── localStorage: track which question IDs this browser has upvoted ──────────
 
@@ -65,6 +70,8 @@ export default function DiscussionsClient({
   const [askText, setAskText] = useState("");
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+  const { session } = useAuth();
+  const router = useRouter();
 
   // Merge initial questions with localStorage upvote state on mount
   useEffect(() => {
@@ -83,7 +90,8 @@ export default function DiscussionsClient({
 
   function submitQuestion() {
     const text = askText.trim();
-    if (!text) return;
+    if (!text || !session) return;
+    const accessToken = session.access_token;
 
     // Optimistic update
     const optimistic: Question = {
@@ -100,7 +108,7 @@ export default function DiscussionsClient({
 
     startTransition(async () => {
       try {
-        const saved = await createQuestion(text);
+        const saved = await createQuestion(text, accessToken);
         setQuestions((prev) =>
           prev.map((q) =>
             q.id === optimistic.id ? { ...saved, upvoted: false } : q,
@@ -157,7 +165,8 @@ export default function DiscussionsClient({
 
   function submitReply(questionId: string) {
     const text = (replyTexts[questionId] ?? "").trim();
-    if (!text) return;
+    if (!text || !session) return;
+    const accessToken = session.access_token;
 
     const optimistic: DbReply = {
       id: `optimistic-${Date.now()}`,
@@ -179,7 +188,7 @@ export default function DiscussionsClient({
 
     startTransition(async () => {
       try {
-        const saved = await createReply(questionId, text);
+        const saved = await createReply(questionId, text, accessToken);
         setQuestions((prev) =>
           prev.map((q) =>
             q.id === questionId
@@ -204,137 +213,157 @@ export default function DiscussionsClient({
     });
   }
 
+  function openAskModal() {
+    if (!session) {
+      router.push("/auth");
+      return;
+    }
+    setShowAskModal(true);
+  }
+
   return (
     <>
-      <section className="min-h-screen bg-gradient-to-br from-[#f8f5fd] to-[#ede8f5]">
-        <div className="mx-auto max-w-[1440px] px-4 py-14 lg:px-12">
-          {/* Hero */}
-          <div className="text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#e9e2f3] px-5 py-2 text-sm font-semibold text-[#6f58a8]">
-              <ChatIcon className="h-4 w-4" />
-              Anonymous Q&amp;A
-            </div>
-            <h1 className="text-[2.8rem] font-extrabold leading-tight text-[#2f2147] md:text-[3.5rem]">
-              Discussions
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-[#5b4b78] md:text-2xl">
-              Ask anything, share experiences — completely anonymous. Your
-              questions help the whole community.
-            </p>
+      <section className="relative overflow-hidden px-4 pt-16 pb-10 text-center lg:px-8">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-[-8rem] left-1/2 h-100 w-150 -translate-x-1/2 opacity-60 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(ellipse, #eaf6f8 0%, #f4eefa 55%, transparent 78%)",
+          }}
+        />
+        <h1 className="relative mb-4 text-[2.6rem] font-extrabold tracking-tight text-foreground">
+          Discussions
+        </h1>
+        <p className="relative mb-8 text-lg leading-relaxed text-foreground/72">
+          Ask anything, share experiences — completely anonymous. No
+          usernames, no judgment.
+        </p>
+        {session ? (
+          <button
+            onClick={openAskModal}
+            className="relative inline-flex items-center gap-1.5 rounded-full bg-[#4e2a84] px-7.5 py-3.5 text-base font-bold text-[#fffdf8] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            Ask anonymously
+          </button>
+        ) : (
+          <div className="relative inline-flex flex-wrap items-center gap-3.5 rounded-full bg-[#f1e8d8] px-5.5 py-3">
+            <span className="text-sm text-foreground/72">
+              Sign in with your Northwestern account to post a question.
+            </span>
+            <a href="/auth" className="whitespace-nowrap text-sm font-bold no-underline">
+              Sign in →
+            </a>
+          </div>
+        )}
+      </section>
+
+      <div className="mx-auto flex max-w-225 flex-wrap gap-3 px-4">
+        <div className="relative min-w-55 flex-1">
+          <Search
+            size={17}
+            strokeWidth={2.25}
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-foreground/40"
+          />
+          <input
+            type="text"
+            placeholder="Search questions…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input-style pl-11"
+          />
+        </div>
+        <div className="flex shrink-0 gap-1 rounded-full bg-secondary p-1">
+          {(["newest", "most-replied"] as const).map((s) => (
             <button
-              onClick={() => setShowAskModal(true)}
-              className="mt-8 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#4e2a84] to-[#6f58a8] px-8 py-4 text-xl font-bold text-white shadow-[0_4px_20px_rgba(78,42,132,0.35)] transition hover:scale-[1.02] hover:shadow-[0_6px_28px_rgba(78,42,132,0.45)] active:scale-[0.98]"
+              key={s}
+              onClick={() => setSort(s)}
+              className={[
+                "rounded-full px-4.5 py-2.5 text-sm font-bold transition",
+                sort === s
+                  ? "bg-[#4e2a84] text-[#fffdf8]"
+                  : "bg-transparent text-foreground/70 hover:text-foreground",
+              ].join(" ")}
             >
-              <PlusCircleIcon className="h-6 w-6" />
-              Ask Anonymously
+              {s === "newest" ? "Newest" : "Most replied"}
             </button>
-          </div>
+          ))}
+        </div>
+      </div>
 
-          {/* Search + Sort */}
-          <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-            <div className="relative w-full max-w-md">
-              <SearchIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9b8bc4]" />
-              <input
-                type="text"
-                placeholder="Search questions…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-full border border-[#d4c7e9] bg-white py-3 pl-12 pr-5 text-base text-[#2f2147] placeholder:text-[#b0a0cc] focus:outline-none focus:ring-2 focus:ring-[#6f58a8]/40"
-              />
-            </div>
-            <div className="flex shrink-0 items-center gap-1 rounded-full border border-[#d4c7e9] bg-white p-1">
-              {(["newest", "most-replied"] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSort(s)}
-                  className={[
-                    "rounded-full px-5 py-2 text-sm font-semibold transition",
-                    sort === s
-                      ? "bg-[#4e2a84] text-white shadow-sm"
-                      : "text-[#5b4b78] hover:bg-[#e9e2f3]",
-                  ].join(" ")}
-                >
-                  {s === "newest" ? "Newest" : "Most Replied"}
-                </button>
-              ))}
-            </div>
-          </div>
+      <section className="mx-auto max-w-225 px-4 py-8 pb-24">
+        {filtered.length === 0 && (
+          <EmptyState search={search} onAsk={openAskModal} signedIn={!!session} />
+        )}
 
-          {/* Questions feed */}
-          <div className="mt-8 space-y-4">
-            {filtered.length === 0 ? (
-              <EmptyState search={search} onAsk={() => setShowAskModal(true)} />
-            ) : (
-              filtered.map((q) => (
-                <QuestionCard
-                  key={q.id}
-                  question={q}
-                  expanded={expandedId === q.id}
-                  onToggleExpand={() =>
-                    setExpandedId(expandedId === q.id ? null : q.id)
-                  }
-                  onToggleUpvote={() => toggleUpvote(q.id)}
-                  replyText={replyTexts[q.id] ?? ""}
-                  onReplyTextChange={(v) =>
-                    setReplyTexts((prev) => ({ ...prev, [q.id]: v }))
-                  }
-                  onSubmitReply={() => submitReply(q.id)}
-                  isPending={isPending}
-                />
-              ))
-            )}
-          </div>
+        <div className="flex flex-col gap-4">
+          {filtered.map((q, i) => (
+            <QuestionCard
+              key={q.id}
+              tape={CARD_TAPE[i % CARD_TAPE.length]}
+              rotate={i % 2 === 0 ? "-rotate-[0.6deg]" : "rotate-[0.6deg]"}
+              question={q}
+              expanded={expandedId === q.id}
+              onToggleExpand={() =>
+                setExpandedId(expandedId === q.id ? null : q.id)
+              }
+              onToggleUpvote={() => toggleUpvote(q.id)}
+              replyText={replyTexts[q.id] ?? ""}
+              onReplyTextChange={(v) =>
+                setReplyTexts((prev) => ({ ...prev, [q.id]: v }))
+              }
+              onSubmitReply={() => submitReply(q.id)}
+              isPending={isPending}
+              canPost={!!session}
+            />
+          ))}
         </div>
       </section>
 
       {/* Ask Modal */}
       {showAskModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#241b2e]/20 p-4 backdrop-blur-sm"
           onClick={(e) =>
             e.target === e.currentTarget && setShowAskModal(false)
           }
         >
-          <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
-            <div className="flex items-center gap-3">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#e9e2f3] text-[#4e2a84]">
-                <ChatIcon className="h-6 w-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-extrabold text-[#2f2147]">
-                  Ask Anonymously
-                </h2>
-                <p className="text-sm text-[#9b8bc4]">No name, no judgement</p>
-              </div>
-            </div>
+          <div className="w-full max-w-130 rounded-[2rem] bg-card p-7 shadow-[var(--shadow-lift)]">
+            <h2 className="mb-1 text-xl font-extrabold text-foreground">
+              Ask anonymously
+            </h2>
+            <p className="mb-4.5 text-[13px] text-foreground/55">
+              No name attached, ever.
+            </p>
             <textarea
               autoFocus
-              placeholder="What's on your mind? Ask anything about student life, immigration, academics…"
+              placeholder="What's on your mind? Ask anything about student life, visas, academics…"
               value={askText}
               onChange={(e) => setAskText(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
                   submitQuestion();
               }}
-              rows={5}
-              className="mt-5 w-full resize-none rounded-2xl border border-[#d4c7e9] bg-[#f8f5fd] p-4 text-base text-[#2f2147] placeholder:text-[#b0a0cc] focus:outline-none focus:ring-2 focus:ring-[#6f58a8]/40"
+              rows={4}
+              className="input-style resize-y"
             />
-            <div className="mt-5 flex justify-end gap-3">
+            <div className="mt-4.5 flex gap-3">
               <button
                 onClick={() => {
                   setShowAskModal(false);
                   setAskText("");
                 }}
-                className="rounded-full px-6 py-3 text-base font-semibold text-[#5b4b78] transition hover:bg-[#e9e2f3]"
+                className="flex-1 rounded-full border-[1.5px] border-border bg-transparent py-3 font-bold text-foreground transition hover:bg-foreground/5"
               >
                 Cancel
               </button>
               <button
                 onClick={submitQuestion}
                 disabled={!askText.trim()}
-                className="rounded-full bg-gradient-to-r from-[#4e2a84] to-[#6f58a8] px-6 py-3 text-base font-bold text-white transition disabled:opacity-40 hover:shadow-[0_4px_16px_rgba(78,42,132,0.35)]"
+                className="flex-1 rounded-full bg-[#4e2a84] py-3 font-bold text-[#fffdf8] transition hover:bg-[#3f216d] disabled:opacity-40"
               >
-                Post Question
+                Post question
               </button>
             </div>
           </div>
@@ -355,6 +384,9 @@ function QuestionCard({
   onReplyTextChange,
   onSubmitReply,
   isPending,
+  canPost,
+  tape,
+  rotate,
 }: {
   question: Question;
   expanded: boolean;
@@ -364,212 +396,135 @@ function QuestionCard({
   onReplyTextChange: (v: string) => void;
   onSubmitReply: () => void;
   isPending: boolean;
+  canPost: boolean;
+  tape: string;
+  rotate: string;
 }) {
   return (
-    <article className="rounded-3xl border border-[#d4c7e9] bg-white shadow-sm transition hover:shadow-md">
-      <button className="w-full p-6 text-left" onClick={onToggleExpand}>
-        <p className="text-lg font-semibold leading-snug text-[#2f2147]">
-          {question.text}
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-[#9b8bc4]">
-          <span className="flex items-center gap-1.5">
-            <ReplyIcon className="h-4 w-4" />
-            {question.replies.length}{" "}
-            {question.replies.length === 1 ? "reply" : "replies"}
-          </span>
-          <span>{formatTime(question.created_at)}</span>
-          <span className="ml-auto text-xs text-[#b0a0cc]">
-            {expanded ? "▲ hide replies" : "▼ show replies"}
-          </span>
-        </div>
-      </button>
+    <div className={`relative ${rotate}`}>
+      <span
+        aria-hidden="true"
+        className={`tape absolute -top-3 left-10 rotate-[-4deg] ${tape}`}
+      />
+      <article className="rounded-[1.75rem] bg-card p-6 shadow-[var(--shadow-soft)] transition hover:shadow-[var(--shadow-lift)]">
+        <div className="flex gap-4">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleUpvote();
+            }}
+            disabled={isPending}
+            className={[
+              "flex h-14 w-12 shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl text-sm font-extrabold transition",
+              question.upvoted
+                ? "bg-[#4e2a84] text-[#fffdf8]"
+                : "bg-[#f4eefa] text-[#3f216d] hover:bg-[#e6dcf2]",
+            ].join(" ")}
+          >
+            <ChevronUp size={16} strokeWidth={2.5} />
+            {question.upvotes > 0 ? question.upvotes : ""}
+          </button>
 
-      <div className="flex items-center border-t border-[#f0ebf7] px-6 py-3">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleUpvote();
-          }}
-          disabled={isPending}
-          className={[
-            "flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition",
-            question.upvoted
-              ? "bg-[#4e2a84] text-white"
-              : "bg-[#f0ebf7] text-[#6f58a8] hover:bg-[#e9e2f3]",
-          ].join(" ")}
-        >
-          <ArrowUpIcon className="h-4 w-4" />
-          {question.upvotes > 0 ? question.upvotes : "Upvote"}
-        </button>
-      </div>
-
-      {expanded && (
-        <div className="border-t border-[#f0ebf7] px-6 pb-6 pt-4">
-          {question.replies.length === 0 ? (
-            <p className="mb-4 text-sm italic text-[#b0a0cc]">
-              No replies yet — be the first to respond!
+          <button className="block flex-1 text-left" onClick={onToggleExpand}>
+            <p className="text-[17px] font-bold leading-snug text-foreground">
+              {question.text}
             </p>
-          ) : (
-            <div className="mb-4 space-y-3">
-              {question.replies.map((r) => (
-                <div key={r.id} className="rounded-2xl bg-[#f8f5fd] px-4 py-3">
-                  <p className="text-sm leading-relaxed text-[#2f2147]">
-                    {r.text}
-                  </p>
-                  <p className="mt-1 text-xs text-[#b0a0cc]">
-                    {formatTime(r.created_at)}
-                  </p>
-                </div>
-              ))}
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-[13px] text-foreground/55">
+              <span className="inline-flex items-center gap-1.5">
+                <MessageCircle size={14} strokeWidth={2.25} />
+                {question.replies.length}{" "}
+                {question.replies.length === 1 ? "reply" : "replies"}
+              </span>
+              <span>{formatTime(question.created_at)}</span>
+              <span className="ml-auto font-bold text-[#4e2a84]">
+                {expanded ? "hide replies" : "show replies"}
+              </span>
             </div>
-          )}
-          <div className="flex gap-3">
-            <input
-              type="text"
-              placeholder="Reply anonymously…"
-              value={replyText}
-              onChange={(e) => onReplyTextChange(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && onSubmitReply()}
-              className="flex-1 rounded-full border border-[#d4c7e9] bg-[#f8f5fd] px-5 py-2.5 text-sm text-[#2f2147] placeholder:text-[#b0a0cc] focus:outline-none focus:ring-2 focus:ring-[#6f58a8]/40"
-            />
-            <button
-              onClick={onSubmitReply}
-              disabled={!replyText.trim() || isPending}
-              className="rounded-full bg-[#4e2a84] px-5 py-2.5 text-sm font-bold text-white transition disabled:opacity-40 hover:bg-[#6f58a8]"
-            >
-              Send
-            </button>
-          </div>
+          </button>
         </div>
-      )}
-    </article>
+
+        {expanded && (
+          <div className="mt-5 border-t border-divider-thin pt-5 pl-16">
+            {question.replies.length === 0 ? (
+              <p className="mb-4 text-sm text-foreground/55 italic">
+                No replies yet — be the first to respond.
+              </p>
+            ) : (
+              <div className="mb-3 flex flex-col gap-2.5">
+                {question.replies.map((r) => (
+                  <div key={r.id} className="rounded-2xl bg-secondary px-4 py-3.5">
+                    <p className="text-sm leading-relaxed">{r.text}</p>
+                    <p className="mt-1.5 text-xs text-foreground/55">
+                      {formatTime(r.created_at)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {canPost ? (
+              <div className="mt-2 flex gap-2.5">
+                <input
+                  type="text"
+                  placeholder="Reply anonymously…"
+                  value={replyText}
+                  onChange={(e) => onReplyTextChange(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && onSubmitReply()}
+                  className="input-style flex-1 py-2.5"
+                />
+                <button
+                  onClick={onSubmitReply}
+                  disabled={!replyText.trim() || isPending}
+                  className="shrink-0 rounded-full bg-[#4e2a84] px-5.5 text-sm font-bold text-[#fffdf8] transition hover:bg-[#3f216d] disabled:opacity-40"
+                >
+                  Send
+                </button>
+              </div>
+            ) : (
+              <div className="mt-2 flex flex-wrap items-center gap-3 rounded-2xl bg-secondary px-4 py-3">
+                <span className="text-[13px] text-foreground/72">
+                  Sign in to reply anonymously.
+                </span>
+                <a href="/auth" className="text-[13px] font-bold no-underline">
+                  Sign in →
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+      </article>
+    </div>
   );
 }
 
 // ─── EmptyState ───────────────────────────────────────────────────────────────
 
-function EmptyState({ search, onAsk }: { search: string; onAsk: () => void }) {
+function EmptyState({
+  search,
+  onAsk,
+  signedIn,
+}: {
+  search: string;
+  onAsk: () => void;
+  signedIn: boolean;
+}) {
   return (
-    <div className="flex flex-col items-center py-20 text-center">
-      <div className="mb-6 grid h-24 w-24 place-items-center rounded-full bg-[#e9e2f3] text-[#9b8bc4]">
-        <ChatIcon className="h-12 w-12" />
-      </div>
-      {search ? (
-        <>
-          <h3 className="text-2xl font-extrabold text-[#2f2147]">
-            No questions match &ldquo;{search}&rdquo;
-          </h3>
-          <p className="mt-2 text-lg text-[#9b8bc4]">
-            Try a different search, or be the first to ask it!
-          </p>
-        </>
-      ) : (
-        <>
-          <h3 className="text-2xl font-extrabold text-[#2f2147]">
-            No questions yet
-          </h3>
-          <p className="mt-2 text-lg text-[#9b8bc4]">
-            Be the first to start a discussion!
-          </p>
-        </>
+    <div className="rounded-[2rem] bg-[#f4eefa] px-6 py-20 text-center shadow-[var(--shadow-soft)]">
+      <p className="mb-2.5 text-lg font-extrabold text-foreground">
+        {search ? `No questions match "${search}"` : "No questions yet"}
+      </p>
+      <p className="mb-6 text-[15px] text-foreground/65">
+        {search
+          ? "Try a different search, or be the first to ask it."
+          : "Be the first to start a discussion."}
+      </p>
+      {signedIn && (
+        <button
+          onClick={onAsk}
+          className="rounded-full bg-[#4e2a84] px-6 py-3.5 text-[15px] font-bold text-[#fffdf8]"
+        >
+          Ask the first question
+        </button>
       )}
-      <button
-        onClick={onAsk}
-        className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#4e2a84] to-[#6f58a8] px-7 py-3.5 text-base font-bold text-white shadow-[0_4px_16px_rgba(78,42,132,0.3)] transition hover:scale-[1.02]"
-      >
-        <PlusCircleIcon className="h-5 w-5" />
-        Ask the First Question
-      </button>
     </div>
-  );
-}
-
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
-function ChatIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function PlusCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8v8" />
-      <path d="M8 12h8" />
-    </svg>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
-function ReplyIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function ArrowUpIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m18 15-6-6-6 6" />
-    </svg>
   );
 }

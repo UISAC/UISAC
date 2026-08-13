@@ -28,8 +28,11 @@ export async function getQuestions(): Promise<DbQuestion[]> {
   return (data ?? []) as unknown as DbQuestion[];
 }
 
-export async function createQuestion(text: string): Promise<DbQuestion> {
-  const supabase = createSupabaseClient();
+export async function createQuestion(
+  text: string,
+  accessToken: string,
+): Promise<DbQuestion> {
+  const supabase = createSupabaseClient(accessToken);
   const { data, error } = await supabase
     .from("questions")
     .insert({ text })
@@ -43,8 +46,9 @@ export async function createQuestion(text: string): Promise<DbQuestion> {
 export async function createReply(
   questionId: string,
   text: string,
+  accessToken: string,
 ): Promise<DbReply> {
-  const supabase = createSupabaseClient();
+  const supabase = createSupabaseClient(accessToken);
   const { data, error } = await supabase
     .from("replies")
     .insert({ question_id: questionId, text })
