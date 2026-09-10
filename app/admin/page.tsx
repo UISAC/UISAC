@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "../components/auth-provider";
-import type { DBEvent } from "../calendar/page";
+import type { DBEvent } from "../calendar/types";
 
 type Tab = "pending" | "approved" | "rejected";
 

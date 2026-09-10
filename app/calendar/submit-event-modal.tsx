@@ -1,42 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { searchPlaces } from "./places-actions";
 import { useAuth } from "../components/auth-provider";
-
-// Common Northwestern (Evanston) campus locations, offered as autosuggest.
-// Free text is always accepted — this just speeds up the common case.
-const CAMPUS_LOCATIONS = [
-  "Norris University Center",
-  "Norris Aquatics Center",
-  "University Library",
-  "Technological Institute (Tech)",
-  "Fisk Hall",
-  "Kresge Centennial Hall",
-  "Annie May Swift Hall",
-  "Harris Hall",
-  "Kellogg Global Hub",
-  "McCormick Foundation Center",
-  "Frances Searle Building",
-  "Ryan Fieldhouse",
-  "Welsh-Ryan Arena",
-  "Patten Gymnasium",
-  "Segal Visitors Center",
-  "Deering Meadow",
-  "The Arch",
-  "Foster-Walker Complex (Plex)",
-  "Sargent Hall",
-  "Allison Hall",
-  "Bobb-McCulloch Hall",
-  "Hobart House",
-  "Willard Residential College",
-  "Shepard Residential College",
-  "Slivka Residential College",
-  "Chapin Hall",
-  "1835 Hinman",
-  "International Studies Residential College",
-  "Buffett Institute for Global Affairs",
-];
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -170,7 +137,7 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
     >
       <div className="max-h-[90vh] w-full max-w-140 overflow-y-auto rounded-[2rem] bg-card shadow-[var(--shadow-lift)]">
         <div className="flex items-center justify-between border-b-2 border-divider px-7 py-6">
-          <h2 className="text-xl font-extrabold text-foreground">
+          <h2 className="font-display text-xl font-bold text-foreground">
             Submit an event
           </h2>
           <button
@@ -325,15 +292,43 @@ function LocationField({
 }) {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
+  const [matches, setMatches] = useState<string[]>([]);
+  const [searching, setSearching] = useState(false);
   const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const matches = useMemo(() => {
-    const q = value.trim().toLowerCase();
-    if (!q) return CAMPUS_LOCATIONS.slice(0, 6);
-    return CAMPUS_LOCATIONS.filter((loc) =>
-      loc.toLowerCase().includes(q),
-    ).slice(0, 6);
-  }, [value]);
+  const query = value.trim();
+  const tooShort = query.length < 3;
+
+  // Debounced Google Places search, proxied through a server action so the
+  // API key never reaches the browser. Silently yields nothing without a
+  // key or if the request fails, leaving the field as plain free text.
+  useEffect(() => {
+    if (tooShort) return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      if (!cancelled) setSearching(true);
+      searchPlaces(query)
+        .then((results) => {
+          if (!cancelled) setMatches(results);
+        })
+        .catch(() => {
+          if (!cancelled) setMatches([]);
+        })
+        .finally(() => {
+          if (!cancelled) setSearching(false);
+        });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, tooShort]);
+
+  // Results are only meaningful for the query they came back for, so a
+  // too-short query shows nothing rather than the previous query's list.
+  const visibleMatches = tooShort ? [] : matches;
+  const showList = open && visibleMatches.length > 0;
+  const showSearching = open && !tooShort && searching && visibleMatches.length === 0;
 
   function selectMatch(loc: string) {
     onChange(loc);
@@ -341,16 +336,16 @@ function LocationField({
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!open || matches.length === 0) return;
+    if (!showList) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setHighlighted((i) => (i + 1) % matches.length);
+      setHighlighted((i) => (i + 1) % visibleMatches.length);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setHighlighted((i) => (i - 1 + matches.length) % matches.length);
+      setHighlighted((i) => (i - 1 + visibleMatches.length) % visibleMatches.length);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      selectMatch(matches[highlighted]);
+      selectMatch(visibleMatches[highlighted]);
     } else if (e.key === "Escape") {
       setOpen(false);
     }
@@ -371,17 +366,22 @@ function LocationField({
           closeTimeout.current = setTimeout(() => setOpen(false), 120);
         }}
         onKeyDown={handleKeyDown}
-        placeholder="e.g. Norris University Center"
+        placeholder="Search for a place, e.g. Norris University Center"
         aria-invalid={error}
-        aria-expanded={open && matches.length > 0}
+        aria-expanded={showList}
         aria-autocomplete="list"
         role="combobox"
         autoComplete="off"
         className="input-style"
       />
-      {open && matches.length > 0 && (
+      {showSearching && (
+        <p className="absolute z-10 mt-1.5 w-full rounded-2xl border-[1.5px] border-border bg-card px-4 py-2.5 text-[13px] text-foreground/55 shadow-[var(--shadow-lift)]">
+          Searching…
+        </p>
+      )}
+      {showList && (
         <ul className="absolute z-10 mt-1.5 w-full overflow-hidden rounded-2xl border-[1.5px] border-border bg-card shadow-[var(--shadow-lift)]">
-          {matches.map((loc, i) => (
+          {visibleMatches.map((loc, i) => (
             <li key={loc}>
               <button
                 type="button"

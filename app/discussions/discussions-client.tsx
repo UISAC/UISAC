@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { ChevronUp, MessageCircle, Search, Plus } from "lucide-react";
+
+const AskModal = dynamic(() => import("./ask-modal"), { ssr: false });
 
 const CARD_TAPE = ["bg-[#f6b93b]/70", "bg-[#ff7a5c]/70", "bg-[#4fb2c4]/70"];
 import {
@@ -232,7 +235,7 @@ export default function DiscussionsClient({
               "radial-gradient(ellipse, #eaf6f8 0%, #f4eefa 55%, transparent 78%)",
           }}
         />
-        <h1 className="relative mb-4 text-[2.6rem] font-extrabold tracking-tight text-foreground">
+        <h1 className="font-display relative mb-4 text-[2.2rem] font-bold tracking-tight text-foreground sm:text-[2.7rem]">
           Discussions
         </h1>
         <p className="relative mb-8 text-lg leading-relaxed text-foreground/72">
@@ -302,7 +305,6 @@ export default function DiscussionsClient({
             <QuestionCard
               key={q.id}
               tape={CARD_TAPE[i % CARD_TAPE.length]}
-              rotate={i % 2 === 0 ? "-rotate-[0.6deg]" : "rotate-[0.6deg]"}
               question={q}
               expanded={expandedId === q.id}
               onToggleExpand={() =>
@@ -321,53 +323,16 @@ export default function DiscussionsClient({
         </div>
       </section>
 
-      {/* Ask Modal */}
       {showAskModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#241b2e]/20 p-4 backdrop-blur-sm"
-          onClick={(e) =>
-            e.target === e.currentTarget && setShowAskModal(false)
-          }
-        >
-          <div className="w-full max-w-130 rounded-[2rem] bg-card p-7 shadow-[var(--shadow-lift)]">
-            <h2 className="mb-1 text-xl font-extrabold text-foreground">
-              Ask anonymously
-            </h2>
-            <p className="mb-4.5 text-[13px] text-foreground/55">
-              No name attached, ever.
-            </p>
-            <textarea
-              autoFocus
-              placeholder="What's on your mind? Ask anything about student life, visas, academics…"
-              value={askText}
-              onChange={(e) => setAskText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
-                  submitQuestion();
-              }}
-              rows={4}
-              className="input-style resize-y"
-            />
-            <div className="mt-4.5 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAskModal(false);
-                  setAskText("");
-                }}
-                className="flex-1 rounded-full border-[1.5px] border-border bg-transparent py-3 font-bold text-foreground transition hover:bg-foreground/5"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={submitQuestion}
-                disabled={!askText.trim()}
-                className="flex-1 rounded-full bg-[#4e2a84] py-3 font-bold text-[#fffdf8] transition hover:bg-[#3f216d] disabled:opacity-40"
-              >
-                Post question
-              </button>
-            </div>
-          </div>
-        </div>
+        <AskModal
+          value={askText}
+          onChange={setAskText}
+          onClose={() => {
+            setShowAskModal(false);
+            setAskText("");
+          }}
+          onSubmit={submitQuestion}
+        />
       )}
     </>
   );
@@ -386,7 +351,6 @@ function QuestionCard({
   isPending,
   canPost,
   tape,
-  rotate,
 }: {
   question: Question;
   expanded: boolean;
@@ -398,13 +362,12 @@ function QuestionCard({
   isPending: boolean;
   canPost: boolean;
   tape: string;
-  rotate: string;
 }) {
   return (
-    <div className={`relative ${rotate}`}>
+    <div className="relative">
       <span
         aria-hidden="true"
-        className={`tape absolute -top-3 left-10 rotate-[-4deg] ${tape}`}
+        className={`tape absolute -top-3 left-10 ${tape}`}
       />
       <article className="rounded-[1.75rem] bg-card p-6 shadow-[var(--shadow-soft)] transition hover:shadow-[var(--shadow-lift)]">
         <div className="flex gap-4">

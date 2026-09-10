@@ -12,7 +12,7 @@ International students at Northwestern University, most on F-1/J-1 visas, naviga
 
 ## Product Purpose
 
-UISAC (the Northwestern International Student Advancement and Advocacy Project) is a resource hub and advocacy organization for international students. It connects students to community events, plain-language U.S. tax filing guidance, an anonymous peer Q&A, and channels student concerns directly to university administration.
+UISAC (the Undergraduate International Students Advancement Council) is a resource hub and advocacy organization for international students. It connects students to community events, plain-language U.S. tax filing guidance, an anonymous peer Q&A, and channels student concerns directly to university administration.
 
 ## Positioning
 
@@ -35,7 +35,7 @@ A Northwestern-recognized student organization (RSO) — distinct from, and not 
 
 ## Brand Commitments
 
-- Name: UISAC (Northwestern International Student Advancement and Advocacy Project).
+- Name: UISAC (Undergraduate International Students Advancement Council).
 - Northwestern purple (`#4e2a84`) as the fixed accent color, used throughout rather than as a swappable token.
 - Real assets on hand: `logo.jpg` (site logo) and `about.jpg` (About page photo) — treat as real, not placeholder.
 - Sponsor: the Buffett Institute for Global Affairs, named and thanked on the About page — a real, confirmed relationship.

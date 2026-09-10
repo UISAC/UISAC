@@ -13,10 +13,7 @@ export default function AuthPage() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/`,
-        // TEMPORARILY DISABLED: restricts Google's account picker to
-        // @u.northwestern.edu Workspace accounts. Not a Google Cloud Console
-        // setting — safe to remove/restore here whenever.
-        // queryParams: { hd: "u.northwestern.edu" },
+        queryParams: { hd: "u.northwestern.edu" },
       },
     });
   }

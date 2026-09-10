@@ -1,6 +1,6 @@
 ---
 name: UISAC
-description: Northwestern International Student Advancement and Advocacy Project — a campus bulletin-board of advocacy, community, and practical help
+description: Undergraduate International Students Advancement Council — a campus bulletin-board of advocacy, community, and practical help
 colors:
   primary: "#4e2a84"
   primary-foreground: "#fffdf8"

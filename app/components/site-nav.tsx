@@ -55,7 +55,7 @@ export default function SiteNav() {
               className="h-full w-full object-cover"
             />
           </span>
-          <span className="text-[22px] font-extrabold tracking-tight text-foreground">
+          <span className="font-display text-[23px] font-bold tracking-tight text-foreground">
             UISAC
           </span>
         </Link>

@@ -160,6 +160,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: var(--font-archivo);
+  --font-display: var(--font-bricolage);
 }
 
 @layer components {
@@ -167,17 +168,47 @@
     @apply w-full rounded-2xl border-[1.5px] border-border bg-card px-4 py-3 text-[15px] text-foreground outline-none transition focus:border-[#4e2a84] focus:ring-2 focus:ring-[#4e2a84]/25;
   }
 
-  /* a short strip of washi tape, for pinning cards to the "board" */
+  /* a short strip of washi tape, torn at both edges, for pinning
+     cards to the "board" — the site's recurring motif, played bigger
+     and rougher than a clean rectangle */
   .tape {
     position: absolute;
-    height: 1.6rem;
-    width: 3.4rem;
-    opacity: 0.85;
-    box-shadow: 0 1px 1px rgba(36, 27, 46, 0.12);
+    height: 1.9rem;
+    width: 4rem;
+    opacity: 0.9;
+    filter: drop-shadow(0 1px 1px rgba(36, 27, 46, 0.16));
+    clip-path: polygon(
+      0% 30%, 8.33% 0%, 16.66% 30%, 25% 0%, 33.33% 30%, 41.66% 0%,
+      50% 30%, 58.33% 0%, 66.66% 30%, 75% 0%, 83.33% 30%, 91.66% 0%, 100% 30%,
+      100% 70%, 91.66% 100%, 83.33% 70%, 75% 100%, 66.66% 70%, 58.33% 100%,
+      50% 70%, 41.66% 100%, 33.33% 70%, 25% 100%, 16.66% 70%, 8.33% 100%, 0% 70%
+    );
+  }
+
+  .tape-lg {
+    height: 2.4rem;
+    width: 5.5rem;
+  }
+
+  /* a small lift on hover for interactive pinned elements */
+  .wobble-hover {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .wobble-hover:hover {
+    transform: scale(1.02);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wobble-hover {
+      transition: none;
+    }
+    .wobble-hover:hover {
+      transform: none;
+    }
   }
 
   /* the site's one authored moment: pillar cards settle onto the
-     board like a note being pinned up, each landing at its own tilt */
+     board like a note being pinned up */
   .pin-settle {
     animation: pin-settle 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -192,15 +223,15 @@
 @keyframes pin-settle {
   0% {
     opacity: 0;
-    transform: translateY(-18px) scale(0.92) rotate(var(--settle-rot, 0deg));
+    transform: translateY(-18px) scale(0.92);
   }
   55% {
     opacity: 1;
-    transform: translateY(3px) scale(1.03) rotate(var(--settle-rot, 0deg));
+    transform: translateY(3px) scale(1.03);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotate(var(--settle-rot, 0deg));
+    transform: translateY(0) scale(1);
   }
 }
 

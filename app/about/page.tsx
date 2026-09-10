@@ -2,80 +2,50 @@ import { Target, Eye, HeartHandshake } from "lucide-react";
 
 type ScatteredPhoto = {
   key: string;
-  src?: string;
-  alt?: string;
-  caption?: string;
-  stripe?: string;
+  src: string;
+  alt: string;
   aspect: string;
-  mobileRotate: string;
-  place: string;
 };
 
 const scatteredPhotos: ScatteredPhoto[] = [
   {
-    key: "real",
+    key: "group",
     src: "/images/about.jpg",
     alt: "UISAC members gathered together as a community",
     aspect: "aspect-[4/5]",
-    mobileRotate: "-rotate-2",
-    place:
-      "md:absolute md:z-20 md:w-[48%] md:top-[2%] md:left-[2%] md:-rotate-3",
   },
   {
-    key: "cultural-night",
-    caption: "PHOTO — cultural night performance",
-    stripe: "#e6dcf2 0px, #e6dcf2 14px, #d2c1e6 14px, #d2c1e6 28px",
-    aspect: "aspect-square",
-    mobileRotate: "rotate-3",
-    place:
-      "md:absolute md:z-10 md:w-[36%] md:top-[-6%] md:right-[-2%] md:rotate-9",
-  },
-  {
-    key: "welcome-fair",
-    caption: "PHOTO — campus welcome fair",
-    stripe: "#fef1de 0px, #fef1de 14px, #f6d9a0 14px, #f6d9a0 28px",
-    aspect: "aspect-[5/4]",
-    mobileRotate: "-rotate-3",
-    place:
-      "md:absolute md:z-30 md:w-[34%] md:bottom-[-8%] md:right-[10%] md:-rotate-7",
-  },
-  {
-    key: "volunteering-day",
-    caption: "PHOTO — team volunteering day",
-    stripe: "#eaf6f8 0px, #eaf6f8 14px, #c9e9ee 14px, #c9e9ee 28px",
+    key: "rock",
+    src: "/images/rock.JPG",
+    alt: "The Rock on campus, painted with flags from around the world",
     aspect: "aspect-[4/5]",
-    mobileRotate: "rotate-2",
-    place:
-      "md:absolute md:z-0 md:w-[30%] md:bottom-[6%] md:left-[-6%] md:rotate-6",
+  },
+  {
+    key: "fest",
+    src: "/images/fest.JPG",
+    alt: "Students gathered for a campus fest on the lakefill",
+    aspect: "aspect-[4/5]",
+  },
+  {
+    key: "lounge",
+    src: "/images/lobby.jpg",
+    alt: "UISAC members meeting in the lounge",
+    aspect: "aspect-[4/5]",
   },
 ];
 
 function ScatteredPhotoPrint({ photo }: { photo: ScatteredPhoto }) {
   return (
     <figure
-      className={`${photo.place} ${photo.mobileRotate} rounded-[10px] bg-[#fffdf8] p-2 pb-3 shadow-[var(--shadow-lift)] transition-[transform,box-shadow] duration-300 ease-out hover:z-40 hover:scale-[1.06] hover:shadow-[0_24px_48px_-14px_rgba(78,42,132,0.38)]`}
+      className={`relative rounded-[10px] bg-[#fffdf8] p-2 pb-3 shadow-[var(--shadow-lift)] transition-[transform,box-shadow] duration-300 ease-out hover:z-10 hover:scale-[1.04] hover:shadow-[0_24px_48px_-14px_rgba(78,42,132,0.38)]`}
     >
       <div className={`${photo.aspect} overflow-hidden rounded-[4px]`}>
-        {photo.src ? (
-          <img
-            src={photo.src}
-            alt={photo.alt}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div
-            className="h-full w-full"
-            style={{
-              background: `repeating-linear-gradient(135deg, ${photo.stripe})`,
-            }}
-          />
-        )}
+        <img
+          src={photo.src}
+          alt={photo.alt}
+          className="h-full w-full object-cover"
+        />
       </div>
-      {photo.caption && (
-        <figcaption className="pt-1.5 text-center font-mono text-[10px] text-foreground/55">
-          {photo.caption}
-        </figcaption>
-      )}
     </figure>
   );
 }
@@ -94,13 +64,13 @@ export default function AboutPage() {
         />
 
         <div className="relative mx-auto max-w-350 text-center">
-          <h1 className="mb-5 text-[2.8rem] font-extrabold tracking-tight text-foreground">
+          <h1 className="font-display mb-5 text-[2.3rem] font-bold tracking-tight text-foreground sm:text-[2.9rem]">
             About UISAC
           </h1>
           <p className="mx-auto max-w-[60ch] text-lg leading-relaxed text-foreground/72">
-            The Northwestern International Student Advancement and Advocacy
-            Project (UISAC) is a student-led organization dedicated to
-            supporting international students.
+            The Undergraduate International Students Advancement Council
+            (UISAC) is a student-led organization dedicated to supporting
+            international students in every aspect of their lives.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm font-bold">
             <a
@@ -126,25 +96,26 @@ export default function AboutPage() {
 
         <div
           id="who-we-are"
-          className="relative mx-auto mt-20 grid max-w-350 scroll-mt-6 grid-cols-1 items-center gap-16 md:grid-cols-2"
+          className="relative mx-auto mt-20 grid max-w-350 scroll-mt-6 grid-cols-1 items-center gap-16 lg:grid-cols-2"
         >
           <div>
-            <h2 className="mb-6 text-[2rem] font-extrabold text-foreground">
+            <h2 className="font-display mb-6 text-[1.75rem] font-bold text-foreground sm:text-[2.1rem]">
               Founded in 2025, by students, for students
             </h2>
             <p className="mb-4.5 text-[17px] leading-relaxed text-foreground/75">
               UISAC has grown into a vibrant community hub. We understand the
-              complexities of moving to a new country for education, and we
-              strive to make that transition as smooth as possible.
+              complexities of moving to a new country for education, leaving
+              all the familiar behind. That is why we strive to make that
+              transition as smooth as possible.
             </p>
             <p className="text-[17px] leading-relaxed text-foreground/75">
-              Our team consists of students from over 30 different countries,
-              bringing a wealth of diverse perspectives and experiences to our
-              advocacy work.
+              Our team consists of students from over 30 countries, bringing a
+              wealth of diverse perspectives and experiences to our advocacy
+              and community initiatives.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 md:relative md:block md:h-130 md:gap-0">
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-4 lg:grid-cols-2 lg:gap-6">
             {scatteredPhotos.map((photo) => (
               <ScatteredPhotoPrint key={photo.key} photo={photo} />
             ))}
@@ -155,18 +126,18 @@ export default function AboutPage() {
       <section id="mission" className="scroll-mt-6 px-5 py-16 lg:px-8">
         <div className="mx-auto max-w-350">
           <div className="mb-12 text-center">
-            <h2 className="mx-auto max-w-[32ch] text-[2rem] font-extrabold text-foreground">
+            <h2 className="font-display mx-auto max-w-[32ch] text-[1.75rem] font-bold text-foreground sm:text-[2.1rem]">
               Guiding our every step is a commitment to every international
               student
             </h2>
           </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <div className="relative -rotate-1 md:mt-6">
+            <div className="relative md:mt-6">
               <span
                 aria-hidden="true"
-                className="tape absolute -top-3 left-10 rotate-[-5deg] bg-[#4fb2c4]/70"
+                className="tape tape-lg absolute -top-3 left-10 bg-[#4fb2c4]/70"
               />
-              <div className="rounded-[1.75rem] bg-[#f4eefa] p-9 shadow-[var(--shadow-soft)]">
+              <div className="wobble-hover rounded-[1.75rem] bg-[#f4eefa] p-7 shadow-[var(--shadow-soft)] sm:p-9">
                 <span className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#4e2a84] text-[#fffdf8]">
                   <Target size={22} strokeWidth={2.25} />
                 </span>
@@ -182,12 +153,12 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            <div className="relative rotate-1">
+            <div className="relative">
               <span
                 aria-hidden="true"
-                className="tape absolute -top-3 right-10 rotate-[6deg] bg-[#ff7a5c]/70"
+                className="tape tape-lg absolute -top-3 right-10 bg-[#ff7a5c]/70"
               />
-              <div className="rounded-[1.75rem] bg-[#fef1de] p-9 shadow-[var(--shadow-soft)]">
+              <div className="wobble-hover rounded-[1.75rem] bg-[#fef1de] p-7 shadow-[var(--shadow-soft)] sm:p-9">
                 <span className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#f6b93b] text-[#3a2705]">
                   <Eye size={22} strokeWidth={2.25} />
                 </span>
@@ -213,14 +184,14 @@ export default function AboutPage() {
         <span className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#ff7a5c] text-[#3d1408]">
           <HeartHandshake size={22} strokeWidth={2.25} />
         </span>
-        <h2 className="mb-5 text-[2.2rem] font-extrabold text-foreground">
+        <h2 className="font-display mb-5 text-[1.85rem] font-bold text-foreground sm:text-[2.2rem]">
           Thank you to our sponsor
         </h2>
         <p className="mx-auto mb-12 max-w-[60ch] text-[17px] leading-relaxed text-foreground/72">
           We extend our deepest appreciation to our primary sponsor for their
           unwavering support and commitment to international education.
         </p>
-        <div className="grid grid-cols-1 items-center gap-10 rounded-[2rem] bg-[#f4eefa] p-10 text-left shadow-[var(--shadow-soft)] sm:grid-cols-3">
+        <div className="grid grid-cols-1 items-center gap-8 rounded-[2rem] bg-[#f4eefa] p-6 text-left shadow-[var(--shadow-soft)] sm:grid-cols-3 sm:gap-10 sm:p-10">
           <div className="rounded-[1.5rem] border-[1.5px] border-border bg-card p-8 text-center">
             <p className="m-0 text-[15px] font-extrabold tracking-wide">
               BUFFETT

@@ -72,7 +72,7 @@ export default function TaxFilingPage() {
   return (
     <div>
       <section className="px-5 pt-18 pb-0 text-center lg:px-8">
-        <h1 className="mx-auto mb-5 max-w-225 text-[2.6rem] font-extrabold tracking-tight text-foreground">
+        <h1 className="font-display mx-auto mb-5 max-w-225 text-[2.2rem] font-bold tracking-tight text-foreground sm:text-[2.7rem]">
           Tax filing resources
         </h1>
         <p className="text-lg leading-relaxed text-foreground/72">
@@ -83,10 +83,10 @@ export default function TaxFilingPage() {
       </section>
 
       <section className="mx-auto max-w-250 px-5 pt-10">
-        <div className="relative -rotate-1">
+        <div className="relative">
           <span
             aria-hidden="true"
-            className="tape absolute -top-3 left-12 rotate-[-6deg] bg-[#f6b93b]/80"
+            className="tape absolute -top-3 left-12 bg-[#f6b93b]/80"
           />
           <div className="flex gap-4.5 rounded-[1.75rem] bg-[#f4eefa] px-7 py-6 shadow-[var(--shadow-soft)]">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#4e2a84] text-[#fffdf8]">
@@ -107,20 +107,15 @@ export default function TaxFilingPage() {
       </section>
 
       <section className="mx-auto max-w-250 px-5 py-16">
-        <h2 className="mb-9 text-[1.75rem] font-extrabold text-foreground">
+        <h2 className="font-display mb-9 text-[1.8rem] font-bold text-foreground">
           Filing in four steps
         </h2>
         <div className="flex flex-col gap-7">
           {steps.map((s, i) => (
-            <div
-              key={s.n}
-              className={`relative ${i % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
-            >
+            <div key={s.n} className="relative">
               <span
                 aria-hidden="true"
-                className={`tape absolute -top-3 left-10 ${
-                  i % 2 === 0 ? "rotate-[-5deg]" : "rotate-[5deg]"
-                } ${STEP_TAPE[i]}`}
+                className={`tape absolute -top-3 left-10 ${STEP_TAPE[i]}`}
               />
               <div className="grid grid-cols-[56px_1fr] gap-5 rounded-[1.5rem] bg-card p-5 shadow-[var(--shadow-soft)]">
                 <span className="grid h-14 w-14 place-items-center rounded-full bg-[#4e2a84] text-xl font-extrabold text-[#fffdf8]">
@@ -141,8 +136,8 @@ export default function TaxFilingPage() {
       </section>
 
       <section className="mx-auto grid max-w-300 grid-cols-1 gap-8 px-5 py-8 md:grid-cols-2">
-        <div className="-rotate-1 rounded-[1.75rem] bg-[#fef1de] p-9 shadow-[var(--shadow-soft)]">
-          <h2 className="mb-5 text-xl font-extrabold text-foreground">
+        <div className="wobble-hover rounded-[1.75rem] bg-[#fef1de] p-7 shadow-[var(--shadow-soft)] sm:p-9">
+          <h2 className="font-display mb-5 text-xl font-bold text-foreground">
             Key deadlines
           </h2>
           {deadlines.map((d) => (
@@ -159,8 +154,8 @@ export default function TaxFilingPage() {
             </div>
           ))}
         </div>
-        <div className="rotate-1 rounded-[1.75rem] bg-[#eaf6f8] p-9 shadow-[var(--shadow-soft)]">
-          <h2 className="mb-5 text-xl font-extrabold text-foreground">
+        <div className="wobble-hover rounded-[1.75rem] bg-[#eaf6f8] p-7 shadow-[var(--shadow-soft)] sm:p-9">
+          <h2 className="font-display mb-5 text-xl font-bold text-foreground">
             Common forms, explained
           </h2>
           {forms.map((f) => (
@@ -177,9 +172,9 @@ export default function TaxFilingPage() {
       <section className="relative mx-auto max-w-225 px-5 py-16">
         <span
           aria-hidden="true"
-          className="tape absolute top-11 left-5 rotate-[-4deg] bg-[#4fb2c4]/70"
+          className="tape absolute top-11 left-5 bg-[#4fb2c4]/70"
         />
-        <h2 className="relative mb-7 text-[1.75rem] font-extrabold text-foreground">
+        <h2 className="font-display relative mb-7 text-[1.8rem] font-bold text-foreground">
           Frequently asked questions
         </h2>
         <div className="flex flex-col gap-3">
@@ -206,13 +201,13 @@ export default function TaxFilingPage() {
       </section>
 
       <section className="px-5 py-16">
-        <div className="relative mx-auto max-w-225 rotate-1">
+        <div className="relative mx-auto max-w-225">
           <span
             aria-hidden="true"
-            className="tape absolute -top-3 right-12 rotate-[6deg] bg-[#f6b93b]/80"
+            className="tape tape-lg absolute -top-3 right-12 bg-[#f6b93b]/80"
           />
           <div className="rounded-[1.75rem] bg-[#fef1de] p-8 shadow-[var(--shadow-soft)]">
-            <h2 className="mb-5 text-2xl font-extrabold text-foreground">
+            <h2 className="font-display mb-5 text-2xl font-bold text-foreground">
               More resources
             </h2>
             <div className="flex flex-col gap-3">
