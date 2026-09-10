@@ -15,6 +15,7 @@ const navItems: NavItem[] = [
   { href: "/about", label: "About" },
   { href: "/calendar", label: "Calendar" },
   { href: "/tax-filing", label: "Tax Filing" },
+  { href: "/faq", label: "FAQ" },
   { href: "/discussions", label: "Discussions" },
 ];
 

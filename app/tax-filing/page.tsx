@@ -1,4 +1,4 @@
-import { Info, ArrowRight, Plus } from "lucide-react";
+import { Info, ArrowRight, Plus, Minus } from "lucide-react";
 
 const STEP_TAPE = [
   "bg-[#4e2a84]/50",
@@ -185,12 +185,20 @@ export default function TaxFilingPage() {
             >
               <summary className="flex justify-between gap-4 text-base font-bold">
                 {q.q}
-                <Plus
-                  aria-hidden="true"
-                  size={20}
-                  strokeWidth={2.5}
-                  className="shrink-0 text-[#4e2a84] transition group-open:rotate-45"
-                />
+                <span className="grid h-6 w-6 shrink-0 place-items-center text-[#4e2a84]">
+                  <Plus
+                    aria-hidden="true"
+                    size={20}
+                    strokeWidth={2.5}
+                    className="group-open:hidden"
+                  />
+                  <Minus
+                    aria-hidden="true"
+                    size={20}
+                    strokeWidth={2.5}
+                    className="hidden group-open:block"
+                  />
+                </span>
               </summary>
               <p className="mt-3 text-[15px] leading-relaxed text-foreground/72">
                 {q.a}
