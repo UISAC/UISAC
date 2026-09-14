@@ -44,7 +44,7 @@ const sections: FaqSection[] = [
               be pointed to an advisor in that school too.
             </li>
             <li>
-              Learn how CAESAR works before registration opens — filters, the
+              Learn how CAESAR works before registration opens. Filters, the
               shopping cart, and waitlists all take a few tries to get used to.
             </li>
             <li>
@@ -59,8 +59,8 @@ const sections: FaqSection[] = [
               before you register.
             </li>
             <li>
-              If a course is full, email the professor anyway and ask to join —
-              a short note about why you want the class goes a long way.
+              If a course is full, email the professor anyway and ask to join.
+              A short note about why you want the class goes a long way.
             </li>
           </ul>
         ),
@@ -73,7 +73,7 @@ const sections: FaqSection[] = [
               <Ext href="https://buffett.northwestern.edu/programs/undergraduate-opportunities/atlas-peer-mentorship-program/">
                 Atlas peer mentorship
               </Ext>{" "}
-              pairs international students with a mentor — applications open in
+              pairs international students with a mentor. Applications open in
               the first weeks of fall, so don&apos;t miss the window.
             </li>
             <li>
@@ -85,7 +85,7 @@ const sections: FaqSection[] = [
             <li>
               <strong className="text-foreground">The Writing Place</strong>{" "}
               offers peer consultations on class assignments and any other
-              writing — genuinely useful for proofreading and feedback.
+              writing. Genuinely useful for proofreading and feedback.
             </li>
             <li>
               The Norris website lists every center for arts, crafts, and
@@ -99,7 +99,7 @@ const sections: FaqSection[] = [
         a: (
           <p>
             Log in with your NetID, pick the resource, and choose how you want
-            to borrow it. Keep an eye on the return deadline — you can almost
+            to borrow it. Keep an eye on the return deadline. You can almost
             always extend a loan, which saves you the late charges.
           </p>
         ),
@@ -129,7 +129,7 @@ const sections: FaqSection[] = [
               Chicago campus.
             </li>
             <li>
-              Keep a map open for the first couple of weeks — campus gets
+              Keep a map open for the first couple of weeks. Campus gets
               familiar faster than you&apos;d think.
             </li>
           </ul>
@@ -175,7 +175,7 @@ const sections: FaqSection[] = [
             </li>
             <li>
               If you&apos;re travelling, Frontier&apos;s 6-month and annual
-              flight passes can cut costs — the catch is you can only book one
+              flight passes can cut costs. The catch is you can only book one
               to two days ahead.
             </li>
             <li>Check what your own ethnic communities are organising, too.</li>
@@ -197,7 +197,7 @@ const sections: FaqSection[] = [
         a: (
           <ul className="ml-4.5 list-disc space-y-2">
             <li>Facebook groups for Chicago and Evanston, plus Marketplace.</li>
-            <li>GroupMe — people advertise rooms and furniture constantly.</li>
+            <li>GroupMe, where people advertise rooms and furniture constantly.</li>
             <li>The Fizz marketplace and feed.</li>
             <li>
               The IFA @ Northwestern group chat for international students.
@@ -217,7 +217,7 @@ const sections: FaqSection[] = [
               .
             </li>
             <li>
-              Ask upperclassmen when and where hiring actually happens — timing
+              Ask upperclassmen when and where hiring actually happens. Timing
               matters more than the posting.
             </li>
             <li>
@@ -242,7 +242,7 @@ export default function FaqPage() {
         </h1>
         <p className="mx-auto max-w-[60ch] text-lg leading-relaxed text-foreground/72">
           The advice international students usually pick up halfway through
-          their first year — collected here so you get it on day one.
+          their first year, collected here so you get it on day one.
         </p>
       </section>
 
@@ -309,7 +309,7 @@ export default function FaqPage() {
             Still stuck on something?
           </h2>
           <p className="mx-auto mb-6 max-w-[52ch] text-[15px] leading-relaxed text-foreground/72">
-            Ask it anonymously in Discussions — no name attached, and someone
+            Ask it anonymously in Discussions. No name attached, and someone
             who has been through it will usually know.
           </p>
           <a

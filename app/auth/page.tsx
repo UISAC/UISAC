@@ -52,7 +52,7 @@ export default function AuthPage() {
         </button>
 
         <p className="mt-5 text-center text-[13px] leading-relaxed text-foreground/55">
-          Only @u.northwestern.edu accounts can sign in — this keeps UISAC a
+          Only @u.northwestern.edu accounts can sign in. This keeps UISAC a
           space just for our community.
         </p>
         <p className="mt-4 text-center text-xs text-foreground/45">

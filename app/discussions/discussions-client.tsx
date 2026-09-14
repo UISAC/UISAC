@@ -239,7 +239,7 @@ export default function DiscussionsClient({
           Discussions
         </h1>
         <p className="relative mb-8 text-lg leading-relaxed text-foreground/72">
-          Ask anything, share experiences — completely anonymous. No
+          Ask anything, share experiences, completely anonymously. No
           usernames, no judgment.
         </p>
         {session ? (
@@ -410,7 +410,7 @@ function QuestionCard({
           <div className="mt-5 border-t border-divider-thin pt-5 pl-16">
             {question.replies.length === 0 ? (
               <p className="mb-4 text-sm text-foreground/55 italic">
-                No replies yet — be the first to respond.
+                No replies yet. Be the first to respond.
               </p>
             ) : (
               <div className="mb-3 flex flex-col gap-2.5">

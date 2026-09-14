@@ -56,7 +56,7 @@ function validate(form: FormState): FieldErrors {
   const time = form.time.trim();
   if (!time) errors.time = "Required.";
   else if (!TIME_PATTERN.test(time)) {
-    errors.time = "Use a format like “3:00 PM” or “3:00 PM – 5:30 PM”.";
+    errors.time = "Use a format like “3:00 PM” or “3:00 PM to 5:30 PM”.";
   }
 
   const place = form.place.trim();
@@ -226,7 +226,7 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
               <input
                 value={form.time}
                 onChange={(e) => set("time", e.target.value)}
-                placeholder="e.g. 3:00 PM – 5:30 PM"
+                placeholder="e.g. 3:00 PM to 5:30 PM"
                 aria-invalid={!!fieldErrors.time}
                 className="input-style"
               />

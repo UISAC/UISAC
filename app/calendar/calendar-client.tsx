@@ -81,7 +81,7 @@ export default function CalendarClient({
               </p>
             ) : (
               <p className="text-[15px] text-foreground/65">
-                Be the first to submit one —{" "}
+                Be the first to submit one.{" "}
                 <a href="/auth" className="font-bold">
                   sign in
                 </a>{" "}

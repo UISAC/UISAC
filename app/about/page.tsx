@@ -5,6 +5,9 @@ type ScatteredPhoto = {
   src: string;
   alt: string;
   aspect: string;
+  // Scrapbook look: each print gets its own tilt, size and vertical offset.
+  // Sizes stay inside their own grid cell so prints never cover each other.
+  frame: string;
 };
 
 const scatteredPhotos: ScatteredPhoto[] = [
@@ -13,31 +16,35 @@ const scatteredPhotos: ScatteredPhoto[] = [
     src: "/images/about.jpg",
     alt: "UISAC members gathered together as a community",
     aspect: "aspect-[4/5]",
+    frame: "w-full -rotate-3",
   },
   {
     key: "rock",
     src: "/images/rock.JPG",
     alt: "The Rock on campus, painted with flags from around the world",
-    aspect: "aspect-[4/5]",
+    aspect: "aspect-square",
+    frame: "w-[88%] justify-self-end rotate-[4deg] lg:mt-10",
   },
   {
     key: "fest",
     src: "/images/fest.JPG",
     alt: "Students gathered for a campus fest on the lakefill",
-    aspect: "aspect-[4/5]",
+    aspect: "aspect-[5/4]",
+    frame: "w-[92%] self-start -rotate-2 lg:-mt-4",
   },
   {
     key: "lounge",
     src: "/images/lobby.jpg",
     alt: "UISAC members meeting in the lounge",
     aspect: "aspect-[4/5]",
+    frame: "w-full justify-self-end rotate-3 lg:mt-6",
   },
 ];
 
 function ScatteredPhotoPrint({ photo }: { photo: ScatteredPhoto }) {
   return (
     <figure
-      className={`relative rounded-[10px] bg-[#fffdf8] p-2 pb-3 shadow-[var(--shadow-lift)] transition-[transform,box-shadow] duration-300 ease-out hover:z-10 hover:scale-[1.04] hover:shadow-[0_24px_48px_-14px_rgba(78,42,132,0.38)]`}
+      className={`${photo.frame} relative rounded-[10px] bg-[#fffdf8] p-2 pb-3 shadow-[var(--shadow-lift)] transition-[transform,box-shadow] duration-300 ease-out hover:z-10 hover:scale-[1.04] hover:shadow-[0_24px_48px_-14px_rgba(78,42,132,0.38)]`}
     >
       <div className={`${photo.aspect} overflow-hidden rounded-[4px]`}>
         <img

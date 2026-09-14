@@ -14,7 +14,8 @@ const navItems: NavItem[] = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/calendar", label: "Calendar" },
-  { href: "/tax-filing", label: "Tax Filing" },
+  // Hidden until tax season — the /tax-filing page itself still works.
+  // { href: "/tax-filing", label: "Tax Filing" },
   { href: "/faq", label: "FAQ" },
   { href: "/discussions", label: "Discussions" },
 ];
