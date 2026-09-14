@@ -62,8 +62,9 @@ export async function createReply(
 export async function adjustUpvote(
   questionId: string,
   delta: 1 | -1,
+  accessToken: string,
 ): Promise<void> {
-  const supabase = createSupabaseClient();
+  const supabase = createSupabaseClient(accessToken);
   const { error } = await supabase.rpc("increment_upvotes", {
     question_id: questionId,
     delta,

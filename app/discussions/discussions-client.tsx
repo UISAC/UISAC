@@ -125,6 +125,11 @@ export default function DiscussionsClient({
   }
 
   function toggleUpvote(id: string) {
+    if (!session) {
+      router.push("/auth");
+      return;
+    }
+    const accessToken = session.access_token;
     const q = questions.find((q) => q.id === id);
     if (!q) return;
     const delta = q.upvoted ? -1 : (1 as const);
@@ -148,7 +153,7 @@ export default function DiscussionsClient({
 
     startTransition(async () => {
       try {
-        await adjustUpvote(id, delta);
+        await adjustUpvote(id, delta, accessToken);
       } catch {
         // Revert
         setQuestions((prev) =>

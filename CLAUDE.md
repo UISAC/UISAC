@@ -26,7 +26,7 @@ Next.js 16 (App Router) + React 19 + Tailwind 4, backed entirely by Supabase (Po
 
 - `supabase/schema.sql` and `supabase/002_discussions_and_domain_restriction.sql` are run manually in the Supabase SQL Editor (no migration tool) and are the source of truth for tables (`events`, `questions`, `replies`) and RLS policies. When changing access rules, update the `.sql` files and re-apply them in the dashboard — nothing applies these automatically.
 - `events` has a `status` workflow (`pending` → `approved`/`rejected`) driven by `app/admin/page.tsx`; only approved events are publicly visible (`app/calendar/page.tsx`), enforced by RLS, not just UI filtering.
-- Discussions upvoting (`increment_upvotes` RPC) is anonymous/login-free by design; dedup happens client-side via `localStorage` (see `discussions-client.tsx`), not server-side.
+- Discussions upvoting (`increment_upvotes` RPC) requires a signed-in user: the function raises if `auth.uid()` is null and `EXECUTE` is granted to `authenticated` only (revoked from `anon`), so callers must pass `session.access_token` through `adjustUpvote`. Repeat-vote dedup is still per-browser `localStorage` (see `discussions-client.tsx`), not server-side, so the same user can vote again from another browser.
 
 ### Conventions
 

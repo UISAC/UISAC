@@ -90,17 +90,26 @@ create policy "Northwestern users can reply"
   to authenticated
   with check (public.is_northwestern());
 
--- security definer so upvoting stays anonymous/login-free, matching the
--- existing localStorage-dedup design in discussions-client.tsx.
+-- Upvoting requires a signed-in user. security definer still bypasses RLS on
+-- questions (so an upvote does not need update rights on the row), but the
+-- auth.uid() guard plus the anon revoke below keep it signed-in only.
+-- Repeat-vote dedup is still per-browser localStorage, see discussions-client.tsx.
 create or replace function public.increment_upvotes(question_id uuid, delta int)
 returns void
-language sql
+language plpgsql
 security definer
 set search_path = public
 as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Sign in to upvote.';
+  end if;
+
   update public.questions
   set upvotes = greatest(0, upvotes + delta)
   where id = question_id;
+end;
 $$;
 
-grant execute on function public.increment_upvotes to anon, authenticated;
+revoke execute on function public.increment_upvotes(uuid, int) from anon, public;
+grant execute on function public.increment_upvotes(uuid, int) to authenticated;
