@@ -1,4 +1,4 @@
-import { Target, Eye, HeartHandshake } from "lucide-react";
+import { Target, Eye, HeartHandshake, ArrowUpRight } from "lucide-react";
 
 type ScatteredPhoto = {
   key: string;
@@ -198,24 +198,24 @@ export default function AboutPage() {
           We extend our deepest appreciation to our primary sponsor for their
           unwavering support and commitment to international education.
         </p>
-        <div className="grid grid-cols-1 items-center gap-8 rounded-[2rem] bg-[#f4eefa] p-6 text-left shadow-[var(--shadow-soft)] sm:grid-cols-3 sm:gap-10 sm:p-10">
-          <div className="rounded-[1.5rem] border-[1.5px] border-border bg-card p-8 text-center">
-            <p className="m-0 text-[15px] font-extrabold tracking-wide">
-              BUFFETT
-              <br />
-              INSTITUTE
-            </p>
-          </div>
-          <div className="sm:col-span-2">
-            <h3 className="mb-3 text-2xl font-extrabold text-foreground">
-              The Buffett Institute for Global Affairs
-            </h3>
-            <p className="text-base leading-relaxed text-foreground/75">
-              Their generous contribution has enabled us to launch critical
-              advocacy initiatives, host community-building events, and
-              provide essential resources to students from around the globe.
-            </p>
-          </div>
+        <div className="mx-auto max-w-175 rounded-[2rem] bg-[#f4eefa] p-7 shadow-[var(--shadow-soft)] sm:p-10">
+          <h3 className="mb-3 text-2xl font-extrabold text-foreground">
+            The Buffett Institute for Global Affairs
+          </h3>
+          <p className="mb-6 text-base leading-relaxed text-foreground/75">
+            Their generous contribution has enabled us to launch critical
+            advocacy initiatives, host community-building events, and provide
+            essential resources to students from around the globe.
+          </p>
+          <a
+            href="https://buffett.northwestern.edu/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-[#4e2a84] px-6 py-3 text-[15px] font-bold text-[#fffdf8] no-underline shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:bg-[#3f216d] hover:shadow-[var(--shadow-lift)]"
+          >
+            Visit the Buffett Institute
+            <ArrowUpRight size={17} strokeWidth={2.5} />
+          </a>
         </div>
       </section>
     </div>
