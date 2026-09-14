@@ -108,7 +108,8 @@ export default function SiteNav() {
                       Admin
                     </Link>
                   )}
-                  <span className="max-w-45 truncate text-sm text-foreground/62">
+                  {/* Hidden at lg, where the full row would overflow. */}
+                  <span className="hidden max-w-45 truncate text-sm text-foreground/62 xl:block">
                     {user.email}
                   </span>
                   <button

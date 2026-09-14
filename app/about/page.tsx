@@ -60,7 +60,7 @@ function ScatteredPhotoPrint({ photo }: { photo: ScatteredPhoto }) {
 export default function AboutPage() {
   return (
     <div>
-      <section className="relative overflow-hidden px-5 pt-20 pb-24 lg:px-8">
+      <section className="relative overflow-hidden px-5 pt-20 pb-14 lg:px-8">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute top-[-6rem] left-1/2 h-100 w-150 -translate-x-1/2 opacity-60 blur-3xl"
@@ -103,9 +103,9 @@ export default function AboutPage() {
 
         <div
           id="who-we-are"
-          className="relative mx-auto mt-20 grid max-w-350 scroll-mt-6 grid-cols-1 items-center gap-16 lg:grid-cols-2"
+          className="relative mx-auto mt-16 max-w-350 scroll-mt-6"
         >
-          <div>
+          <div className="mx-auto max-w-[62ch] text-center">
             <h2 className="font-display mb-6 text-[1.75rem] font-bold text-foreground sm:text-[2.1rem]">
               Founded in 2025, by students, for students
             </h2>
@@ -122,7 +122,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-4 lg:grid-cols-2 lg:gap-6">
+          <div className="mt-12 grid grid-cols-2 items-start gap-5 sm:grid-cols-4 sm:gap-6">
             {scatteredPhotos.map((photo) => (
               <ScatteredPhotoPrint key={photo.key} photo={photo} />
             ))}
@@ -130,7 +130,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section id="mission" className="scroll-mt-6 px-5 py-16 lg:px-8">
+      <section id="mission" className="scroll-mt-6 px-5 py-12 lg:px-8">
         <div className="mx-auto max-w-350">
           <div className="mb-12 text-center">
             <h2 className="font-display mx-auto max-w-[32ch] text-[1.75rem] font-bold text-foreground sm:text-[2.1rem]">
