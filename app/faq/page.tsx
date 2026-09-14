@@ -73,8 +73,9 @@ const sections: FaqSection[] = [
               <Ext href="https://buffett.northwestern.edu/programs/undergraduate-opportunities/atlas-peer-mentorship-program/">
                 Atlas peer mentorship
               </Ext>{" "}
-              pairs international students with a mentor. Applications open in
-              the first weeks of fall, so don&apos;t miss the window.
+              pairs international students on financial aid with a student
+              mentor. Applications open in the first weeks of fall, so
+              don&apos;t miss the window.
             </li>
             <li>
               <strong className="text-foreground">
