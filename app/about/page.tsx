@@ -70,62 +70,70 @@ export default function AboutPage() {
           }}
         />
 
-        <div className="relative mx-auto max-w-350 text-center">
-          <h1 className="font-display mb-5 text-[2.3rem] font-bold tracking-tight text-foreground sm:text-[2.9rem]">
-            About UISAC
-          </h1>
-          <p className="mx-auto max-w-[60ch] text-lg leading-relaxed text-foreground/72">
-            The Undergraduate International Students Advancement Council
-            (UISAC) is a student-led organization dedicated to supporting
-            international students in every aspect of their lives.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm font-bold">
-            <a
-              href="#who-we-are"
-              className="rounded-full border-[1.5px] border-[#4e2a84]/20 px-4 py-2 no-underline transition hover:bg-[#4e2a84]/8"
-            >
-              Who we are
-            </a>
-            <a
-              href="#mission"
-              className="rounded-full border-[1.5px] border-[#4e2a84]/20 px-4 py-2 no-underline transition hover:bg-[#4e2a84]/8"
-            >
-              Mission &amp; vision
-            </a>
-            <a
-              href="#acknowledgment"
-              className="rounded-full border-[1.5px] border-[#4e2a84]/20 px-4 py-2 no-underline transition hover:bg-[#4e2a84]/8"
-            >
-              Sponsor
-            </a>
+        <div className="relative mx-auto grid max-w-350 grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <h1 className="font-display mb-5 text-[2.3rem] font-bold tracking-tight text-foreground sm:text-[2.9rem] xl:text-[3.2rem]">
+              About UISAC
+            </h1>
+            <p className="max-w-[56ch] text-lg leading-relaxed text-foreground/72 xl:text-[19px]">
+              The Undergraduate International Students Advancement Council
+              (UISAC) is a student-led organization dedicated to supporting
+              international students in every aspect of their lives.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3 text-sm font-bold">
+              <a
+                href="#who-we-are"
+                className="rounded-full border-[1.5px] border-[#4e2a84]/20 px-4 py-2 no-underline transition hover:bg-[#4e2a84]/8"
+              >
+                Who we are
+              </a>
+              <a
+                href="#mission"
+                className="rounded-full border-[1.5px] border-[#4e2a84]/20 px-4 py-2 no-underline transition hover:bg-[#4e2a84]/8"
+              >
+                Mission &amp; vision
+              </a>
+              <a
+                href="#acknowledgment"
+                className="rounded-full border-[1.5px] border-[#4e2a84]/20 px-4 py-2 no-underline transition hover:bg-[#4e2a84]/8"
+              >
+                Sponsor
+              </a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 items-start gap-5 sm:gap-6">
+            {scatteredPhotos.slice(0, 2).map((photo) => (
+              <ScatteredPhotoPrint key={photo.key} photo={photo} />
+            ))}
           </div>
         </div>
 
         <div
           id="who-we-are"
-          className="relative mx-auto mt-16 max-w-350 scroll-mt-6"
+          className="relative mx-auto mt-20 grid max-w-350 scroll-mt-6 grid-cols-1 items-center gap-12 lg:mt-24 lg:grid-cols-2 lg:gap-16"
         >
-          <div className="mx-auto max-w-[62ch] text-center">
-            <h2 className="font-display mb-6 text-[1.75rem] font-bold text-foreground sm:text-[2.1rem]">
+          <div className="order-2 grid grid-cols-2 items-start gap-5 sm:gap-6 lg:order-1">
+            {scatteredPhotos.slice(2, 4).map((photo) => (
+              <ScatteredPhotoPrint key={photo.key} photo={photo} />
+            ))}
+          </div>
+
+          <div className="order-1 lg:order-2">
+            <h2 className="font-display mb-6 text-[1.75rem] font-bold text-foreground sm:text-[2.1rem] xl:text-[2.4rem]">
               Founded in 2025, by students, for students
             </h2>
-            <p className="mb-4.5 text-[17px] leading-relaxed text-foreground/75">
+            <p className="mb-4.5 max-w-[56ch] text-[17px] leading-relaxed text-foreground/75 xl:text-[19px]">
               UISAC has grown into a vibrant community hub. We understand the
               complexities of moving to a new country for education, leaving
               all the familiar behind. That is why we strive to make that
               transition as smooth as possible.
             </p>
-            <p className="text-[17px] leading-relaxed text-foreground/75">
+            <p className="max-w-[56ch] text-[17px] leading-relaxed text-foreground/75 xl:text-[19px]">
               Our team consists of students from over 30 countries, bringing a
               wealth of diverse perspectives and experiences to our advocacy
               and community initiatives.
             </p>
-          </div>
-
-          <div className="mt-12 grid grid-cols-2 items-start gap-5 sm:grid-cols-4 sm:gap-6">
-            {scatteredPhotos.map((photo) => (
-              <ScatteredPhotoPrint key={photo.key} photo={photo} />
-            ))}
           </div>
         </div>
       </section>
