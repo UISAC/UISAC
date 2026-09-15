@@ -46,3 +46,7 @@ AGENTS.md
 /.impeccable/critique/
 /.impeccable/live/
 /.impeccable/mocks/
+# editor swap files
+*.swp
+*.swo
+*~
