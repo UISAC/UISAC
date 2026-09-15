@@ -2,16 +2,11 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { Clock, MapPin, Plus } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Plus } from "lucide-react";
 import { googleMapsSearchUrl } from "@/lib/google-places";
 import { useAuth } from "../components/auth-provider";
 import { getApprovedEvents } from "./actions";
-import {
-  formatEventDay,
-  formatEventMonth,
-  isPastEvent,
-  type DBEvent,
-} from "./types";
+import { formatEventFull, isPastEvent, type DBEvent } from "./types";
 
 const SubmitEventModal = dynamic(() => import("./submit-event-modal"), {
   ssr: false,
@@ -114,27 +109,12 @@ export default function CalendarClient({
                     }`}
                   />
                   <article
-                    className={`grid grid-cols-1 items-start gap-6 rounded-[1.75rem] bg-card p-6 shadow-[var(--shadow-soft)] transition sm:grid-cols-[100px_1fr_auto] ${
+                    className={`grid grid-cols-1 items-start gap-6 rounded-[1.75rem] bg-card p-6 shadow-[var(--shadow-soft)] transition sm:grid-cols-[1fr_auto] ${
                       past
                         ? "opacity-60 grayscale"
                         : "hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
                     }`}
                   >
-                    <div
-                      className={`rounded-2xl py-3.5 text-center ${
-                        past
-                          ? "bg-foreground/35 text-[#fffdf8]"
-                          : "bg-[#4e2a84] text-[#fffdf8]"
-                      }`}
-                    >
-                      <p className="text-xs font-extrabold uppercase tracking-wide opacity-80">
-                        {formatEventMonth(event.event_date)}
-                      </p>
-                      <p className="mt-0.5 text-[2.1rem] font-extrabold">
-                        {formatEventDay(event.event_date)}
-                      </p>
-                    </div>
-
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
                       {event.banner_url && (
                         // Fixed box plus object-cover so every banner renders at
@@ -153,7 +133,7 @@ export default function CalendarClient({
                       )}
 
                       <div className="min-w-0">
-                        <div className="mb-2 flex flex-wrap items-center gap-2.5">
+                        <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
                           <h2 className="text-[1.4rem] font-extrabold text-foreground">
                             {event.title}
                           </h2>
@@ -163,6 +143,15 @@ export default function CalendarClient({
                             </span>
                           )}
                         </div>
+
+                        <p
+                          className={`mb-3 inline-flex items-center gap-1.5 text-sm font-bold ${
+                            past ? "text-foreground/60" : "text-[#4e2a84]"
+                          }`}
+                        >
+                          <CalendarDays size={15} strokeWidth={2.25} />
+                          {formatEventFull(event.event_date)}
+                        </p>
 
                         <p className="mb-3 text-[15px] leading-relaxed text-foreground">
                           {event.copy}

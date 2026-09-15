@@ -21,16 +21,6 @@ export function parseEventDate(isoDate: string): Date {
   return new Date(year, month - 1, day);
 }
 
-export function formatEventMonth(isoDate: string): string {
-  return parseEventDate(isoDate)
-    .toLocaleDateString("en-US", { month: "short" })
-    .toUpperCase();
-}
-
-export function formatEventDay(isoDate: string): string {
-  return String(parseEventDate(isoDate).getDate());
-}
-
 export function formatEventFull(isoDate: string): string {
   return parseEventDate(isoDate).toLocaleDateString("en-US", {
     weekday: "short",
