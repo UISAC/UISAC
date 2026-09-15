@@ -6,7 +6,12 @@ import { Clock, MapPin, Plus } from "lucide-react";
 import { googleMapsSearchUrl } from "@/lib/google-places";
 import { useAuth } from "../components/auth-provider";
 import { getApprovedEvents } from "./actions";
-import type { DBEvent } from "./types";
+import {
+  formatEventDay,
+  formatEventMonth,
+  isPastEvent,
+  type DBEvent,
+} from "./types";
 
 const SubmitEventModal = dynamic(() => import("./submit-event-modal"), {
   ssr: false,
@@ -39,6 +44,13 @@ export default function CalendarClient({
       // leave the existing list in place if the refresh fails
     }
   }
+
+  // Events arrive oldest-first. Show what is still to come at the top, then
+  // past events below, most recent first, so the page leads with what is
+  // actually upcoming.
+  const upcoming = events.filter((e) => !isPastEvent(e.event_date));
+  const past = events.filter((e) => isPastEvent(e.event_date)).reverse();
+  const ordered = [...upcoming, ...past];
 
   return (
     <section>
@@ -91,59 +103,90 @@ export default function CalendarClient({
           </div>
         ) : (
           <div className="flex flex-col gap-5">
-            {events.map((event, i) => (
-              <div
-                key={event.id}
-                className="relative"
-              >
-                <span
-                  aria-hidden="true"
-                  className={`tape absolute -top-3 left-10 ${ROW_TAPE[i % ROW_TAPE.length]}`}
-                />
-                <article className="grid grid-cols-1 items-start gap-6 rounded-[1.75rem] bg-card p-6 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)] sm:grid-cols-[100px_1fr_auto]">
-                  <div className="rounded-2xl bg-[#4e2a84] py-3.5 text-center text-[#fffdf8]">
-                    <p className="text-xs font-extrabold uppercase tracking-wide opacity-80">
-                      {event.month}
-                    </p>
-                    <p className="mt-0.5 text-[2.1rem] font-extrabold">
-                      {event.day}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h2 className="mb-2 text-[1.4rem] font-extrabold text-foreground">
-                      {event.title}
-                    </h2>
-                    <p className="mb-3 text-[15px] leading-relaxed text-foreground">
-                      {event.copy}
-                    </p>
-                    <div className="flex flex-wrap gap-4.5 text-sm text-foreground/75">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock size={15} strokeWidth={2.25} />
-                        {event.time}
-                      </span>
-                      <a
-                        href={googleMapsSearchUrl(event.place)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 font-bold text-[#4e2a84] no-underline hover:underline"
-                      >
-                        <MapPin size={15} strokeWidth={2.25} />
-                        {event.place}
-                      </a>
-                    </div>
-                  </div>
+            {ordered.map((event, i) => {
+              const past = isPastEvent(event.event_date);
+              return (
+                <div key={event.id} className="relative">
                   <span
-                    className={`inline-flex h-fit shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold ${
-                      TYPE_TINTS[event.type] ?? TYPE_TINTS.Other
+                    aria-hidden="true"
+                    className={`tape absolute -top-3 left-10 ${
+                      past ? "bg-foreground/15" : ROW_TAPE[i % ROW_TAPE.length]
+                    }`}
+                  />
+                  <article
+                    className={`grid grid-cols-1 items-start gap-6 rounded-[1.75rem] bg-card p-6 shadow-[var(--shadow-soft)] transition sm:grid-cols-[100px_1fr_auto] ${
+                      past
+                        ? "opacity-60 grayscale"
+                        : "hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
                     }`}
                   >
-                    {event.type}
-                  </span>
-                </article>
-              </div>
-            ))}
+                    <div
+                      className={`rounded-2xl py-3.5 text-center ${
+                        past
+                          ? "bg-foreground/35 text-[#fffdf8]"
+                          : "bg-[#4e2a84] text-[#fffdf8]"
+                      }`}
+                    >
+                      <p className="text-xs font-extrabold uppercase tracking-wide opacity-80">
+                        {formatEventMonth(event.event_date)}
+                      </p>
+                      <p className="mt-0.5 text-[2.1rem] font-extrabold">
+                        {formatEventDay(event.event_date)}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="mb-2 flex flex-wrap items-center gap-2.5">
+                        <h2 className="text-[1.4rem] font-extrabold text-foreground">
+                          {event.title}
+                        </h2>
+                        {past && (
+                          <span className="rounded-full bg-foreground/10 px-2.5 py-1 text-xs font-bold text-foreground/60">
+                            Past
+                          </span>
+                        )}
+                      </div>
+
+                      {event.banner_url && (
+                        <img
+                          src={event.banner_url}
+                          alt=""
+                          loading="lazy"
+                          className="mb-3 max-h-56 w-full rounded-2xl object-cover"
+                        />
+                      )}
+
+                      <p className="mb-3 text-[15px] leading-relaxed text-foreground">
+                        {event.copy}
+                      </p>
+                      <div className="flex flex-wrap gap-4.5 text-sm text-foreground/75">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock size={15} strokeWidth={2.25} />
+                          {event.time}
+                        </span>
+                        <a
+                          href={googleMapsSearchUrl(event.place)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 font-bold text-[#4e2a84] no-underline hover:underline"
+                        >
+                          <MapPin size={15} strokeWidth={2.25} />
+                          {event.place}
+                        </a>
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex h-fit shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold ${
+                        TYPE_TINTS[event.type] ?? TYPE_TINTS.Other
+                      }`}
+                    >
+                      {event.type}
+                    </span>
+                  </article>
+                </div>
+              );
+            })}
           </div>
         )}
 

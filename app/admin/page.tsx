@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "../components/auth-provider";
-import type { DBEvent } from "../calendar/types";
+import { formatEventFull, type DBEvent } from "../calendar/types";
 
 type Tab = "pending" | "approved" | "rejected";
 
@@ -124,13 +124,19 @@ export default function AdminPage() {
                     {event.type}
                   </span>
                 </div>
+                {event.banner_url && (
+                  <img
+                    src={event.banner_url}
+                    alt=""
+                    loading="lazy"
+                    className="my-2 max-h-40 w-full max-w-100 rounded-[12px] object-cover"
+                  />
+                )}
                 <p className="my-2 text-[15px] text-foreground/75">
                   {event.copy}
                 </p>
                 <div className="flex flex-wrap gap-4 text-[13px] text-foreground/65">
-                  <span>
-                    {event.month} {event.day}
-                  </span>
+                  <span>{formatEventFull(event.event_date)}</span>
                   <span>{event.time}</span>
                   <span>{event.place}</span>
                 </div>

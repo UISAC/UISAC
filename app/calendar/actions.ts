@@ -7,7 +7,7 @@ export async function getApprovedEvents(): Promise<DBEvent[]> {
     .from("events")
     .select("*")
     .eq("status", "approved")
-    .order("created_at", { ascending: true });
+    .order("event_date", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []) as DBEvent[];
 }

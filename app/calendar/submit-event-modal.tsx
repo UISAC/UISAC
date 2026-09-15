@@ -5,17 +5,18 @@ import { supabase } from "@/lib/supabase";
 import { searchPlaces } from "./places-actions";
 import { useAuth } from "../components/auth-provider";
 
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-
-const DAYS_IN_MONTH: Record<string, number> = {
-  January: 31, February: 29, March: 31, April: 30, May: 31, June: 30,
-  July: 31, August: 31, September: 30, October: 31, November: 30, December: 31,
-};
-
 const EVENT_TYPES = ["Social", "Academic", "Cultural", "Workshop", "Networking", "Other"];
+
+const BANNER_BUCKET = "event-banners";
+const MAX_BANNER_BYTES = 5 * 1024 * 1024;
+const BANNER_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+
+function todayIso(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
 
 // "3 PM", "3:00 PM", "3:00 PM – 5:30 PM", "15:00", "15:00-17:30"
 const TIME_PATTERN =
@@ -24,14 +25,15 @@ const TIME_PATTERN =
 type FormState = {
   title: string;
   copy: string;
-  month: string;
-  day: string;
+  event_date: string;
   time: string;
   place: string;
   type: string;
 };
 
-type FieldErrors = Partial<Record<keyof FormState, string>>;
+type FieldErrors = Partial<Record<keyof FormState, string>> & {
+  banner?: string;
+};
 
 function validate(form: FormState): FieldErrors {
   const errors: FieldErrors = {};
@@ -46,11 +48,9 @@ function validate(form: FormState): FieldErrors {
   else if (copy.length < 10) errors.copy = "Add a bit more detail (10+ characters).";
   else if (copy.length > 600) errors.copy = "Keep it under 600 characters.";
 
-  const day = Number(form.day);
-  const maxDay = DAYS_IN_MONTH[form.month] ?? 31;
-  if (!form.day.trim()) errors.day = "Required.";
-  else if (!Number.isInteger(day) || day < 1 || day > maxDay) {
-    errors.day = `Enter a day between 1 and ${maxDay} for ${form.month}.`;
+  if (!form.event_date) errors.event_date = "Pick a date.";
+  else if (Number.isNaN(Date.parse(form.event_date))) {
+    errors.event_date = "That date doesn't look right.";
   }
 
   const time = form.time.trim();
@@ -79,11 +79,13 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState(false);
 
+  const [banner, setBanner] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+
   const [form, setForm] = useState<FormState>({
     title: "",
     copy: "",
-    month: "January",
-    day: "",
+    event_date: "",
     time: "",
     place: "",
     type: "Social",
@@ -94,6 +96,34 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
     if (touched) {
       setFieldErrors((prev) => validate({ ...form, [field]: value }));
     }
+  }
+
+  function pickBanner(file: File | null) {
+    setBannerPreview((old) => {
+      if (old) URL.revokeObjectURL(old);
+      return file ? URL.createObjectURL(file) : null;
+    });
+
+    if (!file) {
+      setBanner(null);
+      setFieldErrors((prev) => ({ ...prev, banner: undefined }));
+      return;
+    }
+    if (!BANNER_TYPES.includes(file.type)) {
+      setBanner(null);
+      setFieldErrors((prev) => ({
+        ...prev,
+        banner: "Use a JPG, PNG, WebP or AVIF image.",
+      }));
+      return;
+    }
+    if (file.size > MAX_BANNER_BYTES) {
+      setBanner(null);
+      setFieldErrors((prev) => ({ ...prev, banner: "Keep it under 5 MB." }));
+      return;
+    }
+    setBanner(file);
+    setFieldErrors((prev) => ({ ...prev, banner: undefined }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -108,14 +138,31 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
     setError(null);
     setSubmitting(true);
 
+    let bannerUrl: string | null = null;
+    if (banner) {
+      const ext = banner.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from(BANNER_BUCKET)
+        .upload(path, banner, { contentType: banner.type });
+
+      if (uploadError) {
+        setSubmitting(false);
+        setError(`Banner upload failed: ${uploadError.message}`);
+        return;
+      }
+      bannerUrl = supabase.storage.from(BANNER_BUCKET).getPublicUrl(path)
+        .data.publicUrl;
+    }
+
     const { error } = await supabase.from("events").insert({
       title: form.title.trim(),
       copy: form.copy.trim(),
-      month: form.month,
-      day: form.day.trim(),
+      event_date: form.event_date,
       time: form.time.trim(),
       place: form.place.trim(),
       type: form.type,
+      banner_url: bannerUrl,
       status: "pending",
       user_id: user.id,
       user_email: user.email,
@@ -195,32 +242,16 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
               />
             </Field>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Month">
-                <select
-                  value={form.month}
-                  onChange={(e) => set("month", e.target.value)}
-                  className="input-style"
-                >
-                  {MONTHS.map((m) => (
-                    <option key={m}>{m}</option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label="Day" error={fieldErrors.day}>
-                <input
-                  type="number"
-                  min={1}
-                  max={DAYS_IN_MONTH[form.month] ?? 31}
-                  value={form.day}
-                  onChange={(e) => set("day", e.target.value)}
-                  placeholder="e.g. 26"
-                  aria-invalid={!!fieldErrors.day}
-                  className="input-style"
-                />
-              </Field>
-            </div>
+            <Field label="Date" error={fieldErrors.event_date}>
+              <input
+                type="date"
+                value={form.event_date}
+                min={todayIso()}
+                onChange={(e) => set("event_date", e.target.value)}
+                aria-invalid={!!fieldErrors.event_date}
+                className="input-style"
+              />
+            </Field>
 
             <Field label="Time" error={fieldErrors.time}>
               <input
@@ -250,6 +281,38 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
                   <option key={t}>{t}</option>
                 ))}
               </select>
+            </Field>
+
+            <Field label="Banner (optional)" error={fieldErrors.banner}>
+              {bannerPreview ? (
+                <div className="flex items-center gap-4">
+                  <img
+                    src={bannerPreview}
+                    alt="Selected banner preview"
+                    className="h-20 w-32 shrink-0 rounded-[12px] border-[1.5px] border-border object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => pickBanner(null)}
+                    className="rounded-full border-[1.5px] border-border px-4 py-2 text-sm font-bold text-foreground transition hover:bg-foreground/5"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    accept={BANNER_TYPES.join(",")}
+                    onChange={(e) => pickBanner(e.target.files?.[0] ?? null)}
+                    aria-invalid={!!fieldErrors.banner}
+                    className="w-full rounded-2xl border-[1.5px] border-dashed border-border bg-card px-4 py-3 text-[15px] text-foreground/72 transition file:mr-3 file:rounded-full file:border-0 file:bg-[#f4eefa] file:px-4 file:py-2 file:text-sm file:font-bold file:text-[#3f216d] hover:border-[#4e2a84]/40"
+                  />
+                  <p className="text-[13px] text-foreground/55">
+                    JPG, PNG, WebP or AVIF, up to 5 MB. Wide images look best.
+                  </p>
+                </>
+              )}
             </Field>
 
             {error && (
