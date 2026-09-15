@@ -11,8 +11,8 @@ alter table public.events drop column if exists day;
 
 -- ─── Event banner storage ───────────────────────────────────────────────────
 -- Public read so approved banners render for anyone; uploads restricted to
--- signed-in Northwestern accounts. The size cap and MIME allowlist are
--- enforced by storage itself, not just the upload form.
+-- signed-in Northwestern accounts. One JPG or PNG per event: the size cap and
+-- MIME allowlist are enforced by storage itself, not just the upload form.
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -20,7 +20,7 @@ values (
   'event-banners',
   true,
   5242880,
-  array['image/jpeg', 'image/png', 'image/webp', 'image/avif']
+  array['image/jpeg', 'image/png']
 )
 on conflict (id) do update
   set public = excluded.public,

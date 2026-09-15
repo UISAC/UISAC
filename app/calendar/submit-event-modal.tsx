@@ -9,7 +9,7 @@ const EVENT_TYPES = ["Social", "Academic", "Cultural", "Workshop", "Networking",
 
 const BANNER_BUCKET = "event-banners";
 const MAX_BANNER_BYTES = 5 * 1024 * 1024;
-const BANNER_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+const BANNER_TYPES = ["image/jpeg", "image/png"];
 
 function todayIso(): string {
   const now = new Date();
@@ -113,7 +113,7 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
       setBanner(null);
       setFieldErrors((prev) => ({
         ...prev,
-        banner: "Use a JPG, PNG, WebP or AVIF image.",
+        banner: "Use a JPG or PNG image.",
       }));
       return;
     }
@@ -303,13 +303,14 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
                 <>
                   <input
                     type="file"
+                    multiple={false}
                     accept={BANNER_TYPES.join(",")}
                     onChange={(e) => pickBanner(e.target.files?.[0] ?? null)}
                     aria-invalid={!!fieldErrors.banner}
                     className="w-full rounded-2xl border-[1.5px] border-dashed border-border bg-card px-4 py-3 text-[15px] text-foreground/72 transition file:mr-3 file:rounded-full file:border-0 file:bg-[#f4eefa] file:px-4 file:py-2 file:text-sm file:font-bold file:text-[#3f216d] hover:border-[#4e2a84]/40"
                   />
                   <p className="text-[13px] text-foreground/55">
-                    JPG, PNG, WebP or AVIF, up to 5 MB. Wide images look best.
+                    One image, JPG or PNG, up to 5 MB.
                   </p>
                 </>
               )}

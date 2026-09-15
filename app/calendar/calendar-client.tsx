@@ -135,45 +135,54 @@ export default function CalendarClient({
                       </p>
                     </div>
 
-                    <div>
-                      <div className="mb-2 flex flex-wrap items-center gap-2.5">
-                        <h2 className="text-[1.4rem] font-extrabold text-foreground">
-                          {event.title}
-                        </h2>
-                        {past && (
-                          <span className="rounded-full bg-foreground/10 px-2.5 py-1 text-xs font-bold text-foreground/60">
-                            Past
-                          </span>
-                        )}
-                      </div>
-
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
                       {event.banner_url && (
+                        // Fixed box plus object-cover so every banner renders at
+                        // the same size whatever the uploaded image's shape.
                         <img
                           src={event.banner_url}
                           alt=""
                           loading="lazy"
-                          className="mb-3 max-h-56 w-full rounded-2xl object-cover"
+                          // An admin can delete a banner file while the event
+                          // still points at it; collapse rather than leave a hole.
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                          className="h-40 w-full shrink-0 rounded-[14px] object-cover sm:h-36 sm:w-36"
                         />
                       )}
 
-                      <p className="mb-3 text-[15px] leading-relaxed text-foreground">
-                        {event.copy}
-                      </p>
-                      <div className="flex flex-wrap gap-4.5 text-sm text-foreground/75">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Clock size={15} strokeWidth={2.25} />
-                          {event.time}
-                        </span>
-                        <a
-                          href={googleMapsSearchUrl(event.place)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1.5 font-bold text-[#4e2a84] no-underline hover:underline"
-                        >
-                          <MapPin size={15} strokeWidth={2.25} />
-                          {event.place}
-                        </a>
+                      <div className="min-w-0">
+                        <div className="mb-2 flex flex-wrap items-center gap-2.5">
+                          <h2 className="text-[1.4rem] font-extrabold text-foreground">
+                            {event.title}
+                          </h2>
+                          {past && (
+                            <span className="rounded-full bg-foreground/10 px-2.5 py-1 text-xs font-bold text-foreground/60">
+                              Past
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mb-3 text-[15px] leading-relaxed text-foreground">
+                          {event.copy}
+                        </p>
+                        <div className="flex flex-wrap gap-4.5 text-sm text-foreground/75">
+                          <span className="inline-flex items-center gap-1.5">
+                            <Clock size={15} strokeWidth={2.25} />
+                            {event.time}
+                          </span>
+                          <a
+                            href={googleMapsSearchUrl(event.place)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1.5 font-bold text-[#4e2a84] no-underline hover:underline"
+                          >
+                            <MapPin size={15} strokeWidth={2.25} />
+                            {event.place}
+                          </a>
+                        </div>
                       </div>
                     </div>
                     <span
