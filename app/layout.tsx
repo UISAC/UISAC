@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, Bricolage_Grotesque } from "next/font/google";
 import SiteNav from "./components/site-nav";
+import SiteFooter from "./components/site-footer";
 import { AuthProvider } from "./components/auth-provider";
 import "./globals.css";
 
@@ -51,6 +52,7 @@ export default function RootLayout({
         <AuthProvider>
           <SiteNav />
           <main>{children}</main>
+          <SiteFooter />
         </AuthProvider>
       </body>
     </html>
