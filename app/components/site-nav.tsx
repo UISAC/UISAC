@@ -16,8 +16,8 @@ const navItems: NavItem[] = [
   { href: "/calendar", label: "Calendar" },
   // Hidden until tax season — the /tax-filing page itself still works.
   // { href: "/tax-filing", label: "Tax Filing" },
-  { href: "/faq", label: "FAQ" },
   { href: "/discussions", label: "Discussions" },
+  { href: "/faq", label: "FAQ" },
 ];
 
 function isActive(pathname: string, href: string): boolean {
