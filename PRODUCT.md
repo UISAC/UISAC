@@ -21,7 +21,7 @@ A Northwestern-recognized student organization (RSO) — distinct from, and not 
 ## Operating Context
 
 - Community events are user-submitted, then reviewed by admins through a `pending` → `approved`/`rejected` workflow (`app/admin/page.tsx`); only `approved` events are publicly visible, enforced by Supabase RLS, not just UI filtering.
-- Discussions are anonymous in content but not in access: posts and replies carry no author, and anyone can read, but asking, replying and upvoting all require a signed-in Northwestern account. Repeat-vote dedup is per-browser `localStorage`, not server-side.
+- Discussions are anonymous to other students but not to the database: nothing about the author is shown or returned by the API, so readers cannot tell who wrote a post, but an author id is stored so people can edit and delete their own posts and admins can moderate. Anyone with Supabase dashboard access can therefore link posts to people, which matters for a board where students ask about visas. Asking, replying and upvoting all require a signed-in Northwestern account. Repeat-vote dedup is per-browser `localStorage`, not server-side.
 - Sign-in is Google OAuth through Supabase, restricted to the `@u.northwestern.edu` domain, enforced both server-side (Supabase Auth Hook) and client-side (defense-in-depth for pre-existing accounts).
 - Admin/moderation access currently gates on a single hardcoded email in `lib/auth.ts` (`ADMIN_EMAILS`); this is a placeholder for a small officer board, not the intended steady state.
 

@@ -3,7 +3,14 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ChevronUp, MessageCircle, Search, Plus } from "lucide-react";
+import {
+  ChevronUp,
+  MessageCircle,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 
 const AskModal = dynamic(() => import("./ask-modal"), { ssr: false });
 
@@ -12,8 +19,14 @@ import {
   createQuestion,
   createReply,
   adjustUpvote,
+  deleteQuestion,
+  deleteReply,
+  getMyDiscussionIds,
+  updateQuestion,
+  updateReply,
   type DbQuestion,
   type DbReply,
+  type MyDiscussionIds,
 } from "./actions";
 import { useAuth } from "../components/auth-provider";
 
@@ -73,7 +86,13 @@ export default function DiscussionsClient({
   const [askText, setAskText] = useState("");
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
-  const { session } = useAuth();
+  const [mine, setMine] = useState<MyDiscussionIds>({
+    questions: [],
+    replies: [],
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const { session, isAdminUser } = useAuth();
   const router = useRouter();
 
   // Merge initial questions with localStorage upvote state on mount
@@ -81,6 +100,121 @@ export default function DiscussionsClient({
     const ids = loadUpvotedIds();
     setQuestions(initialQuestions.map((q) => withUpvoted(q, ids)));
   }, [initialQuestions]);
+
+  // Posts carry no readable author, so ownership is fetched separately.
+  useEffect(() => {
+    if (!session) return;
+    let cancelled = false;
+    getMyDiscussionIds(session.access_token)
+      .then((ids) => {
+        if (!cancelled) setMine(ids);
+      })
+      .catch(() => {
+        // no controls shown if this fails; the server still enforces ownership
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
+  const ownsQuestion = (id: string) => mine.questions.includes(id);
+  const ownsReply = (id: string) => mine.replies.includes(id);
+
+  function startEditing(id: string, text: string) {
+    setEditingId(id);
+    setEditText(text);
+  }
+
+  function saveQuestionEdit(id: string) {
+    const text = editText.trim();
+    if (!text || !session) return;
+    const accessToken = session.access_token;
+    const previous = questions;
+
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === id ? { ...q, text, edited_at: new Date().toISOString() } : q,
+      ),
+    );
+    setEditingId(null);
+
+    startTransition(async () => {
+      try {
+        await updateQuestion(id, text, accessToken);
+      } catch {
+        setQuestions(previous);
+      }
+    });
+  }
+
+  function saveReplyEdit(questionId: string, replyId: string) {
+    const text = editText.trim();
+    if (!text || !session) return;
+    const accessToken = session.access_token;
+    const previous = questions;
+
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? {
+              ...q,
+              replies: q.replies.map((r) =>
+                r.id === replyId
+                  ? { ...r, text, edited_at: new Date().toISOString() }
+                  : r,
+              ),
+            }
+          : q,
+      ),
+    );
+    setEditingId(null);
+
+    startTransition(async () => {
+      try {
+        await updateReply(replyId, text, accessToken);
+      } catch {
+        setQuestions(previous);
+      }
+    });
+  }
+
+  function removeQuestion(id: string) {
+    if (!session) return;
+    const accessToken = session.access_token;
+    const previous = questions;
+
+    setQuestions((prev) => prev.filter((q) => q.id !== id));
+
+    startTransition(async () => {
+      try {
+        await deleteQuestion(id, accessToken);
+      } catch {
+        setQuestions(previous);
+      }
+    });
+  }
+
+  function removeReply(questionId: string, replyId: string) {
+    if (!session) return;
+    const accessToken = session.access_token;
+    const previous = questions;
+
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? { ...q, replies: q.replies.filter((r) => r.id !== replyId) }
+          : q,
+      ),
+    );
+
+    startTransition(async () => {
+      try {
+        await deleteReply(replyId, accessToken);
+      } catch {
+        setQuestions(previous);
+      }
+    });
+  }
 
   const filtered = questions
     .filter((q) => q.text.toLowerCase().includes(search.toLowerCase()))
@@ -103,6 +237,7 @@ export default function DiscussionsClient({
       upvotes: 0,
       upvoted: false,
       created_at: new Date().toISOString(),
+      edited_at: null,
       replies: [],
     };
     setQuestions((prev) => [optimistic, ...prev]);
@@ -117,6 +252,11 @@ export default function DiscussionsClient({
             q.id === optimistic.id ? { ...saved, upvoted: false } : q,
           ),
         );
+        // Own it straight away so the controls appear without a refetch.
+        setMine((prev) => ({
+          ...prev,
+          questions: [...prev.questions, saved.id],
+        }));
       } catch {
         // Revert on failure
         setQuestions((prev) => prev.filter((q) => q.id !== optimistic.id));
@@ -181,6 +321,7 @@ export default function DiscussionsClient({
       question_id: questionId,
       text,
       created_at: new Date().toISOString(),
+      edited_at: null,
     };
 
     setQuestions((prev) =>
@@ -209,6 +350,7 @@ export default function DiscussionsClient({
               : q,
           ),
         );
+        setMine((prev) => ({ ...prev, replies: [...prev.replies, saved.id] }));
       } catch {
         setQuestions((prev) =>
           prev.map((q) =>
@@ -323,6 +465,18 @@ export default function DiscussionsClient({
               onSubmitReply={() => submitReply(q.id)}
               isPending={isPending}
               canPost={!!session}
+              ownsQuestion={ownsQuestion(q.id)}
+              ownsReply={ownsReply}
+              isAdmin={isAdminUser}
+              editingId={editingId}
+              editText={editText}
+              onEditTextChange={setEditText}
+              onStartEditing={startEditing}
+              onCancelEditing={() => setEditingId(null)}
+              onSaveQuestionEdit={() => saveQuestionEdit(q.id)}
+              onSaveReplyEdit={(replyId) => saveReplyEdit(q.id, replyId)}
+              onDeleteQuestion={() => removeQuestion(q.id)}
+              onDeleteReply={(replyId) => removeReply(q.id, replyId)}
             />
           ))}
         </div>
@@ -356,6 +510,18 @@ function QuestionCard({
   isPending,
   canPost,
   tape,
+  ownsQuestion,
+  ownsReply,
+  isAdmin,
+  editingId,
+  editText,
+  onEditTextChange,
+  onStartEditing,
+  onCancelEditing,
+  onSaveQuestionEdit,
+  onSaveReplyEdit,
+  onDeleteQuestion,
+  onDeleteReply,
 }: {
   question: Question;
   expanded: boolean;
@@ -367,7 +533,21 @@ function QuestionCard({
   isPending: boolean;
   canPost: boolean;
   tape: string;
+  ownsQuestion: boolean;
+  ownsReply: (replyId: string) => boolean;
+  isAdmin: boolean;
+  editingId: string | null;
+  editText: string;
+  onEditTextChange: (v: string) => void;
+  onStartEditing: (id: string, text: string) => void;
+  onCancelEditing: () => void;
+  onSaveQuestionEdit: () => void;
+  onSaveReplyEdit: (replyId: string) => void;
+  onDeleteQuestion: () => void;
+  onDeleteReply: (replyId: string) => void;
 }) {
+  const editingQuestion = editingId === question.id;
+
   return (
     <div className="relative">
       <span
@@ -393,22 +573,75 @@ function QuestionCard({
             {question.upvotes > 0 ? question.upvotes : ""}
           </button>
 
-          <button className="block flex-1 text-left" onClick={onToggleExpand}>
-            <p className="text-[17px] font-bold leading-snug text-foreground">
-              {question.text}
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-[13px] text-foreground/55">
-              <span className="inline-flex items-center gap-1.5">
-                <MessageCircle size={14} strokeWidth={2.25} />
-                {question.replies.length}{" "}
-                {question.replies.length === 1 ? "reply" : "replies"}
-              </span>
-              <span>{formatTime(question.created_at)}</span>
-              <span className="ml-auto font-bold text-[#4e2a84]">
-                {expanded ? "hide replies" : "show replies"}
-              </span>
+          {editingQuestion ? (
+            <div className="flex-1">
+              <textarea
+                autoFocus
+                rows={3}
+                value={editText}
+                onChange={(e) => onEditTextChange(e.target.value)}
+                className="input-style resize-y"
+              />
+              <div className="mt-2.5 flex gap-2.5">
+                <button
+                  onClick={onSaveQuestionEdit}
+                  disabled={!editText.trim() || isPending}
+                  className="rounded-full bg-[#4e2a84] px-5 py-2 text-sm font-bold text-[#fffdf8] transition hover:bg-[#3f216d] disabled:opacity-40"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={onCancelEditing}
+                  className="rounded-full border-[1.5px] border-border px-5 py-2 text-sm font-bold text-foreground transition hover:bg-foreground/5"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          </button>
+          ) : (
+            <div className="min-w-0 flex-1">
+              <button className="block w-full text-left" onClick={onToggleExpand}>
+                <p className="text-[17px] font-bold leading-snug text-foreground">
+                  {question.text}
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-[13px] text-foreground/55">
+                  <span className="inline-flex items-center gap-1.5">
+                    <MessageCircle size={14} strokeWidth={2.25} />
+                    {question.replies.length}{" "}
+                    {question.replies.length === 1 ? "reply" : "replies"}
+                  </span>
+                  <span>{formatTime(question.created_at)}</span>
+                  {question.edited_at && <span>edited</span>}
+                  <span className="ml-auto font-bold text-[#4e2a84]">
+                    {expanded ? "hide replies" : "show replies"}
+                  </span>
+                </div>
+              </button>
+
+              {(ownsQuestion || isAdmin) && (
+                <div className="mt-2.5 flex gap-2">
+                  {ownsQuestion && (
+                    <button
+                      onClick={() => onStartEditing(question.id, question.text)}
+                      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-bold text-foreground/60 transition hover:bg-foreground/5 hover:text-foreground"
+                    >
+                      <Pencil size={13} strokeWidth={2.5} />
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={onDeleteQuestion}
+                    disabled={isPending}
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-bold text-[#b0402a]/75 transition hover:bg-[#b0402a]/8 hover:text-[#b0402a] disabled:opacity-40"
+                  >
+                    <Trash2 size={13} strokeWidth={2.5} />
+                    Delete
+                    {!ownsQuestion && isAdmin && " as admin"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {expanded && (
@@ -421,10 +654,59 @@ function QuestionCard({
               <div className="mb-3 flex flex-col gap-2.5">
                 {question.replies.map((r) => (
                   <div key={r.id} className="rounded-2xl bg-secondary px-4 py-3.5">
-                    <p className="text-sm leading-relaxed">{r.text}</p>
-                    <p className="mt-1.5 text-xs text-foreground/55">
-                      {formatTime(r.created_at)}
-                    </p>
+                    {editingId === r.id ? (
+                      <>
+                        <textarea
+                          autoFocus
+                          rows={2}
+                          value={editText}
+                          onChange={(e) => onEditTextChange(e.target.value)}
+                          className="input-style resize-y"
+                        />
+                        <div className="mt-2.5 flex gap-2.5">
+                          <button
+                            onClick={() => onSaveReplyEdit(r.id)}
+                            disabled={!editText.trim() || isPending}
+                            className="rounded-full bg-[#4e2a84] px-5 py-2 text-sm font-bold text-[#fffdf8] transition hover:bg-[#3f216d] disabled:opacity-40"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={onCancelEditing}
+                            className="rounded-full border-[1.5px] border-border px-5 py-2 text-sm font-bold text-foreground transition hover:bg-foreground/5"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm leading-relaxed">{r.text}</p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-foreground/55">
+                          <span>{formatTime(r.created_at)}</span>
+                          {r.edited_at && <span>edited</span>}
+                          {ownsReply(r.id) && (
+                            <button
+                              onClick={() => onStartEditing(r.id, r.text)}
+                              className="inline-flex items-center gap-1 font-bold transition hover:text-foreground"
+                            >
+                              <Pencil size={12} strokeWidth={2.5} />
+                              Edit
+                            </button>
+                          )}
+                          {(ownsReply(r.id) || isAdmin) && (
+                            <button
+                              onClick={() => onDeleteReply(r.id)}
+                              disabled={isPending}
+                              className="inline-flex items-center gap-1 font-bold text-[#b0402a]/75 transition hover:text-[#b0402a] disabled:opacity-40"
+                            >
+                              <Trash2 size={12} strokeWidth={2.5} />
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
