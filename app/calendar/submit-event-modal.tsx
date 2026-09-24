@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { searchPlaces } from "./places-actions";
+import { deleteBanner } from "./actions";
+import type { DBEvent } from "./types";
 import { useAuth } from "../components/auth-provider";
 
 const EVENT_TYPES = ["Social", "Academic", "Cultural", "Workshop", "Networking", "Other"];
@@ -69,10 +71,20 @@ function validate(form: FormState): FieldErrors {
 type Props = {
   onClose: () => void;
   onSubmitted: () => void;
+  /** Present when editing rather than submitting a new event. */
+  event?: DBEvent;
+  /** Admin edits publish straight away; an owner's edit goes back for review. */
+  asAdmin?: boolean;
 };
 
-export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
+export default function SubmitEventModal({
+  onClose,
+  onSubmitted,
+  event,
+  asAdmin = false,
+}: Props) {
   const { user } = useAuth();
+  const editing = !!event;
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -80,15 +92,19 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
   const [touched, setTouched] = useState(false);
 
   const [banner, setBanner] = useState<File | null>(null);
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(
+    event?.banner_url ?? null,
+  );
+  // Tracks an existing banner the user cleared, so the old file can be removed.
+  const [bannerCleared, setBannerCleared] = useState(false);
 
   const [form, setForm] = useState<FormState>({
-    title: "",
-    copy: "",
-    event_date: "",
-    time: "",
-    place: "",
-    type: "Social",
+    title: event?.title ?? "",
+    copy: event?.copy ?? "",
+    event_date: event?.event_date ?? "",
+    time: event?.time ?? "",
+    place: event?.place ?? "",
+    type: event?.type ?? "Social",
   });
 
   function set(field: keyof FormState, value: string) {
@@ -100,12 +116,15 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
 
   function pickBanner(file: File | null) {
     setBannerPreview((old) => {
-      if (old) URL.revokeObjectURL(old);
+      // Only object URLs we created need revoking; an existing banner is a
+      // plain https URL.
+      if (old?.startsWith("blob:")) URL.revokeObjectURL(old);
       return file ? URL.createObjectURL(file) : null;
     });
 
     if (!file) {
       setBanner(null);
+      setBannerCleared(true);
       setFieldErrors((prev) => ({ ...prev, banner: undefined }));
       return;
     }
@@ -138,7 +157,8 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
     setError(null);
     setSubmitting(true);
 
-    let bannerUrl: string | null = null;
+    // Keep the existing banner unless it was replaced or cleared.
+    let bannerUrl: string | null = editing ? (event?.banner_url ?? null) : null;
     if (banner) {
       const ext = banner.name.split(".").pop()?.toLowerCase() ?? "jpg";
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
@@ -153,9 +173,11 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
       }
       bannerUrl = supabase.storage.from(BANNER_BUCKET).getPublicUrl(path)
         .data.publicUrl;
+    } else if (bannerCleared) {
+      bannerUrl = null;
     }
 
-    const { error } = await supabase.from("events").insert({
+    const fields = {
       title: form.title.trim(),
       copy: form.copy.trim(),
       event_date: form.event_date,
@@ -163,10 +185,29 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
       place: form.place.trim(),
       type: form.type,
       banner_url: bannerUrl,
-      status: "pending",
-      user_id: user.id,
-      user_email: user.email,
-    });
+    };
+
+    const { error } = editing
+      ? await supabase
+          .from("events")
+          .update({
+            ...fields,
+            // An owner's edit must land back in review; RLS rejects anything
+            // else. An admin's edit leaves the current status alone.
+            ...(asAdmin ? {} : { status: "pending" }),
+          })
+          .eq("id", event!.id)
+      : await supabase.from("events").insert({
+          ...fields,
+          status: "pending",
+          user_id: user.id,
+          user_email: user.email,
+        });
+
+    // Drop the file the event no longer points at, once the row is saved.
+    if (!error && editing && event?.banner_url && event.banner_url !== bannerUrl) {
+      await deleteBanner(event.banner_url);
+    }
 
     setSubmitting(false);
 
@@ -185,7 +226,7 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
       <div className="max-h-[90vh] w-full max-w-140 overflow-y-auto rounded-[2rem] bg-card shadow-[var(--shadow-lift)]">
         <div className="flex items-center justify-between border-b-2 border-divider px-7 py-6">
           <h2 className="font-display text-xl font-bold text-foreground">
-            Submit an event
+            {editing ? "Edit event" : "Submit an event"}
           </h2>
           <button
             onClick={onClose}
@@ -204,11 +245,14 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
               </svg>
             </span>
             <h3 className="mb-2.5 text-xl font-extrabold text-foreground">
-              Event submitted!
+              {editing ? "Changes saved" : "Event submitted!"}
             </h3>
             <p className="mb-6 text-[15px] text-foreground/72">
-              Your event is pending admin approval and will appear on the
-              calendar once approved.
+              {editing && asAdmin
+                ? "Your changes are live on the calendar."
+                : editing
+                  ? "Edited events go back for review, so this one will reappear on the calendar once an admin approves it."
+                  : "Your event is pending admin approval and will appear on the calendar once approved."}
             </p>
             <button
               onClick={onSubmitted}
@@ -335,7 +379,13 @@ export default function SubmitEventModal({ onClose, onSubmitted }: Props) {
                 disabled={submitting}
                 className="flex-1 rounded-full bg-[#4e2a84] py-3 font-bold text-[#fffdf8] transition hover:bg-[#3f216d] disabled:opacity-60"
               >
-                {submitting ? "Submitting…" : "Submit for approval"}
+                {submitting
+                  ? "Saving…"
+                  : editing
+                    ? asAdmin
+                      ? "Save changes"
+                      : "Save and resubmit"
+                    : "Submit for approval"}
               </button>
             </div>
           </form>

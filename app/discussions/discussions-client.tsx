@@ -15,6 +15,11 @@ import {
 const AskModal = dynamic(() => import("./ask-modal"), { ssr: false });
 
 const CARD_TAPE = ["bg-[#f6b93b]/70", "bg-[#ff7a5c]/70", "bg-[#4fb2c4]/70"];
+
+// Authors get a short window to fix a typo, matching the RLS policy in
+// supabase/005. Admins are exempt. The clock below re-renders so the control
+// disappears when the window lapses rather than failing on save.
+const EDIT_WINDOW_MS = 5 * 60 * 1000;
 import {
   createQuestion,
   createReply,
@@ -119,6 +124,21 @@ export default function DiscussionsClient({
 
   const ownsQuestion = (id: string) => mine.questions.includes(id);
   const ownsReply = (id: string) => mine.replies.includes(id);
+
+  // Ticks so an expiring edit window actually hides the control.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const withinEditWindow = (createdAt: string) =>
+    now - new Date(createdAt).getTime() < EDIT_WINDOW_MS;
+
+  const canEditQuestion = (q: Question) =>
+    isAdminUser || (ownsQuestion(q.id) && withinEditWindow(q.created_at));
+  const canEditReply = (r: DbReply) =>
+    isAdminUser || (ownsReply(r.id) && withinEditWindow(r.created_at));
 
   function startEditing(id: string, text: string) {
     setEditingId(id);
@@ -467,6 +487,8 @@ export default function DiscussionsClient({
               canPost={!!session}
               ownsQuestion={ownsQuestion(q.id)}
               ownsReply={ownsReply}
+              canEditQuestion={canEditQuestion(q)}
+              canEditReply={canEditReply}
               isAdmin={isAdminUser}
               editingId={editingId}
               editText={editText}
@@ -512,6 +534,8 @@ function QuestionCard({
   tape,
   ownsQuestion,
   ownsReply,
+  canEditQuestion,
+  canEditReply,
   isAdmin,
   editingId,
   editText,
@@ -535,6 +559,8 @@ function QuestionCard({
   tape: string;
   ownsQuestion: boolean;
   ownsReply: (replyId: string) => boolean;
+  canEditQuestion: boolean;
+  canEditReply: (reply: DbReply) => boolean;
   isAdmin: boolean;
   editingId: string | null;
   editText: string;
@@ -620,7 +646,7 @@ function QuestionCard({
 
               {(ownsQuestion || isAdmin) && (
                 <div className="mt-2.5 flex gap-2">
-                  {ownsQuestion && (
+                  {canEditQuestion && (
                     <button
                       onClick={() => onStartEditing(question.id, question.text)}
                       className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-bold text-foreground/60 transition hover:bg-foreground/5 hover:text-foreground"
@@ -685,7 +711,7 @@ function QuestionCard({
                         <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-foreground/55">
                           <span>{formatTime(r.created_at)}</span>
                           {r.edited_at && <span>edited</span>}
-                          {ownsReply(r.id) && (
+                          {canEditReply(r) && (
                             <button
                               onClick={() => onStartEditing(r.id, r.text)}
                               className="inline-flex items-center gap-1 font-bold transition hover:text-foreground"

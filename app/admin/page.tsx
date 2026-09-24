@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "../components/auth-provider";
+import { deleteEvent } from "../calendar/actions";
 import { formatEventFull, type DBEvent } from "../calendar/types";
+
+const SubmitEventModal = dynamic(
+  () => import("../calendar/submit-event-modal"),
+  { ssr: false },
+);
 
 type Tab = "pending" | "approved" | "rejected";
 
@@ -13,6 +21,19 @@ export default function AdminPage() {
   const [events, setEvents] = useState<DBEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<DBEvent | null>(null);
+
+  async function removeEvent(event: DBEvent) {
+    setUpdating(event.id);
+    const previous = events;
+    setEvents((prev) => prev.filter((e) => e.id !== event.id));
+    try {
+      await deleteEvent(event);
+    } catch {
+      setEvents(previous);
+    }
+    setUpdating(null);
+  }
 
   async function fetchEvents(status: Tab) {
     setLoadingEvents(true);
@@ -185,10 +206,40 @@ export default function AdminPage() {
                   Approve
                 </button>
               )}
+
+              <div className="flex w-full gap-2 border-t border-divider-thin pt-3">
+                <button
+                  onClick={() => setEditingEvent(event)}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-bold text-foreground/60 transition hover:bg-foreground/5 hover:text-foreground"
+                >
+                  <Pencil size={13} strokeWidth={2.5} />
+                  Edit
+                </button>
+                <button
+                  onClick={() => removeEvent(event)}
+                  disabled={updating === event.id}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-bold text-[#b0402a]/75 transition hover:bg-[#b0402a]/8 hover:text-[#b0402a] disabled:opacity-40"
+                >
+                  <Trash2 size={13} strokeWidth={2.5} />
+                  Delete
+                </button>
+              </div>
             </article>
           ))
         )}
       </div>
+
+      {editingEvent && (
+        <SubmitEventModal
+          event={editingEvent}
+          asAdmin
+          onClose={() => setEditingEvent(null)}
+          onSubmitted={() => {
+            setEditingEvent(null);
+            fetchEvents(tab);
+          }}
+        />
+      )}
     </section>
   );
 }

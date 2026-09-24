@@ -95,7 +95,10 @@ export async function updateQuestion(
     .eq("id", questionId)
     .select("id, text, upvotes, created_at, edited_at");
   if (error) throw new Error(error.message);
-  if (!data?.length) throw new Error("You can only edit your own question.");
+  if (!data?.length)
+    throw new Error(
+      "Questions can only be edited by their author within 5 minutes of posting.",
+    );
   revalidatePath("/discussions");
   return { ...(data[0] as unknown as DbQuestion), replies: [] };
 }
@@ -127,7 +130,10 @@ export async function updateReply(
     .eq("id", replyId)
     .select("id, question_id, text, created_at, edited_at");
   if (error) throw new Error(error.message);
-  if (!data?.length) throw new Error("You can only edit your own reply.");
+  if (!data?.length)
+    throw new Error(
+      "Replies can only be edited by their author within 5 minutes of posting.",
+    );
   revalidatePath("/discussions");
   return data[0] as unknown as DbReply;
 }
