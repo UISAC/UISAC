@@ -22,15 +22,18 @@ export default function AdminPage() {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<DBEvent | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function removeEvent(event: DBEvent) {
     setUpdating(event.id);
+    setError(null);
     const previous = events;
     setEvents((prev) => prev.filter((e) => e.id !== event.id));
     try {
       await deleteEvent(event);
-    } catch {
+    } catch (e) {
       setEvents(previous);
+      setError(e instanceof Error ? e.message : "Could not delete that event.");
     }
     setUpdating(null);
   }
@@ -52,7 +55,24 @@ export default function AdminPage() {
 
   async function updateStatus(id: string, status: "approved" | "rejected") {
     setUpdating(id);
-    await supabase.from("events").update({ status }).eq("id", id);
+    setError(null);
+    // Asking for the row back matters. RLS refuses a write in two different
+    // ways: a failed with-check raises, but a failed using-clause just matches
+    // no rows and reports success. Ignoring both is what made an admin missing
+    // from is_admin() look like an Approve button that did nothing at all.
+    const { data, error } = await supabase
+      .from("events")
+      .update({ status })
+      .eq("id", id)
+      .select("id");
+    if (error) {
+      setError(error.message);
+    } else if (!data?.length) {
+      setError(
+        "The database refused that change. Your account is probably missing " +
+          "from the is_admin() function in Supabase.",
+      );
+    }
     setUpdating(null);
     fetchEvents(tab);
   }
@@ -120,6 +140,12 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
+      {error && (
+        <div className="mb-5 rounded-2xl bg-[#fdece5] px-5 py-4 text-[15px] font-bold text-[#b0402a]">
+          {error}
+        </div>
+      )}
 
       <div className="flex flex-col gap-3">
         {loadingEvents ? (
