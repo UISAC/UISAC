@@ -30,7 +30,8 @@ security definer
 as $$
   select (auth.jwt() ->> 'email') in (
     'harutsargsyan2027@u.northwestern.edu',
-    'sofiasaega2029@u.northwestern.edu'
+    'sofiasaega2029@u.northwestern.edu',
+    'nayayazigi2028@u.northwestern.edu'
   );
 $$;
 
