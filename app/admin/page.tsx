@@ -186,6 +186,16 @@ export default function AdminPage() {
                   <span>{formatEventFull(event.event_date)}</span>
                   <span>{event.time}</span>
                   <span>{event.place}</span>
+                  {event.link && (
+                    <a
+                      href={event.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="max-w-60 truncate font-bold text-[#4e2a84]"
+                    >
+                      {event.link}
+                    </a>
+                  )}
                 </div>
                 {event.user_email && (
                   <p className="mt-2 text-xs text-foreground/55">

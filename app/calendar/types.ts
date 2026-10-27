@@ -7,6 +7,8 @@ export type DBEvent = {
   time: string;
   place: string;
   type: string;
+  /** Optional related link (signup form, Instagram post, …). */
+  link: string | null;
   banner_url: string | null;
   status: "pending" | "approved" | "rejected";
   user_id: string | null;

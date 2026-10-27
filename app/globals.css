@@ -303,3 +303,71 @@
     line-height: 1.5;
   }
 }
+
+/* FullCalendar ships its own look; these variables and overrides pull the two
+   month grids back into the site's palette and type. Scoped to .fc-uisac so
+   nothing else on the page is affected. */
+.fc-uisac {
+  --fc-border-color: var(--border);
+  --fc-today-bg-color: #f4eefa;
+  --fc-neutral-bg-color: transparent;
+  --fc-page-bg-color: transparent;
+  --fc-event-text-color: #fffdf8;
+  --fc-small-font-size: 0.78rem;
+}
+
+.fc-uisac .fc {
+  font-family: inherit;
+}
+
+/* The outer frame is the card itself, so drop FullCalendar's own border. */
+.fc-uisac .fc-theme-standard .fc-scrollgrid {
+  border: 0;
+}
+
+.fc-uisac .fc-col-header-cell {
+  padding: 0.35rem 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--foreground) 55%, transparent);
+}
+
+.fc-uisac .fc-daygrid-day-number {
+  padding: 0.3rem 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--foreground) 75%, transparent);
+}
+
+.fc-uisac .fc-day-today .fc-daygrid-day-number {
+  font-weight: 900;
+  color: #4e2a84;
+}
+
+.fc-uisac .fc-daygrid-event {
+  margin: 1px 2px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.fc-uisac .fc-daygrid-event .fc-event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc-uisac .fc-daygrid-more-link {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #4e2a84;
+}
+
+/* Keep the focus ring visible for keyboard users on the event pills. */
+.fc-uisac .fc-daygrid-event:focus-visible {
+  outline: 2px solid #4e2a84;
+  outline-offset: 1px;
+}

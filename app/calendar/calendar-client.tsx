@@ -2,21 +2,25 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import {
-  CalendarDays,
-  Clock,
-  MapPin,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
-import { googleMapsSearchUrl } from "@/lib/google-places";
+import { CalendarDays, ChevronDown, List, Pencil, Plus, Trash2 } from "lucide-react";
 import { useAuth } from "../components/auth-provider";
 import { deleteEvent, getApprovedEvents, getMyEvents } from "./actions";
+import EventCard from "./event-card";
 import { formatEventFull, isPastEvent, type DBEvent } from "./types";
 
 const SubmitEventModal = dynamic(() => import("./submit-event-modal"), {
   ssr: false,
+});
+
+// FullCalendar is a large dependency and the list view is the default, so it
+// is only fetched once someone actually switches to the calendar.
+const CalendarMonthView = dynamic(() => import("./calendar-month-view"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex justify-center py-20">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#4e2a84] border-t-transparent" />
+    </div>
+  ),
 });
 
 const ROW_TAPE = ["bg-[#f6b93b]/80", "bg-[#ff7a5c]/80", "bg-[#4fb2c4]/80"];
@@ -27,14 +31,7 @@ const STATUS_TINTS: Record<string, string> = {
   rejected: "bg-[#fdece5] text-[#b0402a]",
 };
 
-const TYPE_TINTS: Record<string, string> = {
-  Social: "bg-[#fef1de] text-[#7a5309]",
-  Academic: "bg-[#f4eefa] text-[#3f216d]",
-  Cultural: "bg-[#fff0eb] text-[#7a2d16]",
-  Workshop: "bg-[#eaf6f8] text-[#0d4750]",
-  Networking: "bg-[#eaf5ee] text-[#1f5836]",
-  Other: "bg-[#f1e8d8] text-[#4a3c1f]",
-};
+type View = "list" | "calendar";
 
 export default function CalendarClient({
   initialEvents,
@@ -46,6 +43,7 @@ export default function CalendarClient({
   const [showModal, setShowModal] = useState(false);
   const [myEvents, setMyEvents] = useState<DBEvent[]>([]);
   const [editingEvent, setEditingEvent] = useState<DBEvent | null>(null);
+  const [view, setView] = useState<View>("list");
 
   async function refreshEvents() {
     try {
@@ -94,17 +92,20 @@ export default function CalendarClient({
 
   const mySubmissions = user ? myEvents : [];
 
-  // Events arrive oldest-first. Show what is still to come at the top, then
-  // past events below, most recent first, so the page leads with what is
-  // actually upcoming.
+  // Events arrive oldest-first. Upcoming leads the page; past events are
+  // tucked into a collapsed section, most recent first.
   const upcoming = events.filter((e) => !isPastEvent(e.event_date));
   const past = events.filter((e) => isPastEvent(e.event_date)).reverse();
-  const ordered = [...upcoming, ...past];
+
+  const views: { key: View; label: string; icon: typeof List }[] = [
+    { key: "list", label: "List", icon: List },
+    { key: "calendar", label: "Calendar", icon: CalendarDays },
+  ];
 
   return (
     <section>
       <div className="mx-auto max-w-300 px-5 py-14 lg:px-8">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
             <h1 className="font-display mb-2.5 text-[2.2rem] font-bold tracking-tight text-foreground sm:text-[2.7rem]">
               Upcoming events
@@ -122,6 +123,32 @@ export default function CalendarClient({
               Add Event
             </button>
           )}
+        </div>
+
+        <div
+          role="tablist"
+          aria-label="Event view"
+          className="mb-8 inline-flex gap-1 rounded-full bg-secondary p-1"
+        >
+          {views.map((v) => {
+            const Icon = v.icon;
+            return (
+              <button
+                key={v.key}
+                role="tab"
+                aria-selected={view === v.key}
+                onClick={() => setView(v.key)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-[15px] font-bold transition ${
+                  view === v.key
+                    ? "bg-[#4e2a84] text-[#fffdf8]"
+                    : "text-foreground/60 hover:text-foreground"
+                }`}
+              >
+                <Icon size={16} strokeWidth={2.5} />
+                {v.label}
+              </button>
+            );
+          })}
         </div>
 
         {events.length === 0 ? (
@@ -150,96 +177,56 @@ export default function CalendarClient({
               </p>
             )}
           </div>
+        ) : view === "calendar" ? (
+          <CalendarMonthView events={events} />
         ) : (
-          <div className="flex flex-col gap-5">
-            {ordered.map((event, i) => {
-              const past = isPastEvent(event.event_date);
-              return (
-                <div key={event.id} className="relative">
-                  <span
-                    aria-hidden="true"
-                    className={`tape absolute -top-3 left-10 ${
-                      past ? "bg-foreground/15" : ROW_TAPE[i % ROW_TAPE.length]
-                    }`}
-                  />
-                  <article
-                    className={`grid grid-cols-1 items-start gap-6 rounded-[1.75rem] bg-card p-6 shadow-[var(--shadow-soft)] transition sm:grid-cols-[1fr_auto] ${
-                      past
-                        ? "opacity-60 grayscale"
-                        : "hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
-                    }`}
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-                      {event.banner_url && (
-                        // Fixed box plus object-cover so every banner renders at
-                        // the same size whatever the uploaded image's shape.
-                        <img
-                          src={event.banner_url}
-                          alt=""
-                          loading="lazy"
-                          // An admin can delete a banner file while the event
-                          // still points at it; collapse rather than leave a hole.
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                          className="h-40 w-full shrink-0 rounded-[14px] object-cover sm:h-36 sm:w-36"
-                        />
-                      )}
-
-                      <div className="min-w-0">
-                        <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
-                          <h2 className="text-[1.4rem] font-extrabold text-foreground">
-                            {event.title}
-                          </h2>
-                          {past && (
-                            <span className="rounded-full bg-foreground/10 px-2.5 py-1 text-xs font-bold text-foreground/60">
-                              Past
-                            </span>
-                          )}
-                        </div>
-
-                        <p
-                          className={`mb-3 inline-flex items-center gap-1.5 text-sm font-bold ${
-                            past ? "text-foreground/60" : "text-[#4e2a84]"
-                          }`}
-                        >
-                          <CalendarDays size={15} strokeWidth={2.25} />
-                          {formatEventFull(event.event_date)}
-                        </p>
-
-                        <p className="mb-3 text-[15px] leading-relaxed text-foreground">
-                          {event.copy}
-                        </p>
-                        <div className="flex flex-wrap gap-4.5 text-sm text-foreground/75">
-                          <span className="inline-flex items-center gap-1.5">
-                            <Clock size={15} strokeWidth={2.25} />
-                            {event.time}
-                          </span>
-                          <a
-                            href={googleMapsSearchUrl(event.place)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1.5 font-bold text-[#4e2a84] no-underline hover:underline"
-                          >
-                            <MapPin size={15} strokeWidth={2.25} />
-                            {event.place}
-                          </a>
-                        </div>
-                      </div>
-                    </div>
+          <>
+            {upcoming.length === 0 ? (
+              <div className="rounded-[2rem] bg-[#f4eefa] px-6 py-16 text-center shadow-[var(--shadow-soft)]">
+                <p className="text-[15px] font-bold text-foreground/70">
+                  Nothing coming up right now.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-5">
+                {upcoming.map((event, i) => (
+                  <div key={event.id} className="relative">
                     <span
-                      className={`inline-flex h-fit shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold ${
-                        TYPE_TINTS[event.type] ?? TYPE_TINTS.Other
-                      }`}
-                    >
-                      {event.type}
+                      aria-hidden="true"
+                      className={`tape absolute -top-3 left-10 ${ROW_TAPE[i % ROW_TAPE.length]}`}
+                    />
+                    <EventCard event={event} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {past.length > 0 && (
+              // <details> gives the open/close behaviour and keyboard support
+              // for free, and keeps the section collapsed on first paint.
+              <details className="group mt-10 rounded-[1.5rem] border-[1.5px] border-border bg-card/60">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4.5 [&::-webkit-details-marker]:hidden">
+                  <span className="text-[15px] font-extrabold text-foreground">
+                    Past events{" "}
+                    <span className="font-bold text-foreground/55">
+                      ({past.length})
                     </span>
-                  </article>
+                  </span>
+                  <ChevronDown
+                    size={18}
+                    strokeWidth={2.5}
+                    aria-hidden="true"
+                    className="shrink-0 text-foreground/55 transition-transform group-open:rotate-180"
+                  />
+                </summary>
+                <div className="flex flex-col gap-5 px-6 pt-1 pb-6">
+                  {past.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
+              </details>
+            )}
+          </>
         )}
 
         {!user && (
@@ -259,48 +246,61 @@ export default function CalendarClient({
               Your submissions
             </h2>
             <p className="mb-6 text-[15px] text-foreground/68">
-              Only you can see this. Editing an event sends it back for review.
+              Only you can see this. Editing an event sends it back for review,
+              and an event can no longer be edited once its date has passed.
             </p>
 
             <div className="flex flex-col gap-3">
-              {mySubmissions.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border-[1.5px] border-border bg-card px-5 py-4 shadow-[var(--shadow-soft)]"
-                >
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold capitalize ${
-                      STATUS_TINTS[event.status] ?? STATUS_TINTS.pending
-                    }`}
+              {mySubmissions.map((event) => {
+                // Mirrors the RLS policy: once the date has passed the row is
+                // a record, so the control is hidden rather than left to fail
+                // on save. Admins edit past events from /admin instead.
+                const locked = isPastEvent(event.event_date);
+                return (
+                  <div
+                    key={event.id}
+                    className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border-[1.5px] border-border bg-card px-5 py-4 shadow-[var(--shadow-soft)]"
                   >
-                    {event.status}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-bold text-foreground">
-                      {event.title}
-                    </span>
-                    <span className="block text-[13px] text-foreground/60">
-                      {formatEventFull(event.event_date)}, {event.time}
-                    </span>
-                  </span>
-                  <span className="flex shrink-0 gap-2">
-                    <button
-                      onClick={() => setEditingEvent(event)}
-                      className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-border px-3.5 py-1.5 text-[13px] font-bold text-foreground transition hover:bg-foreground/5"
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold capitalize ${
+                        STATUS_TINTS[event.status] ?? STATUS_TINTS.pending
+                      }`}
                     >
-                      <Pencil size={13} strokeWidth={2.5} />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => removeEvent(event)}
-                      className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#e3b3ab] px-3.5 py-1.5 text-[13px] font-bold text-[#b0402a] transition hover:bg-[#b0402a]/8"
-                    >
-                      <Trash2 size={13} strokeWidth={2.5} />
-                      Delete
-                    </button>
-                  </span>
-                </div>
-              ))}
+                      {event.status}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] font-bold text-foreground">
+                        {event.title}
+                      </span>
+                      <span className="block text-[13px] text-foreground/60">
+                        {formatEventFull(event.event_date)}, {event.time}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      {locked ? (
+                        <span className="text-[13px] font-bold text-foreground/45">
+                          Past &middot; locked
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setEditingEvent(event)}
+                          className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-border px-3.5 py-1.5 text-[13px] font-bold text-foreground transition hover:bg-foreground/5"
+                        >
+                          <Pencil size={13} strokeWidth={2.5} />
+                          Edit
+                        </button>
+                      )}
+                      <button
+                        onClick={() => removeEvent(event)}
+                        className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-[#e3b3ab] px-3.5 py-1.5 text-[13px] font-bold text-[#b0402a] transition hover:bg-[#b0402a]/8"
+                      >
+                        <Trash2 size={13} strokeWidth={2.5} />
+                        Delete
+                      </button>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

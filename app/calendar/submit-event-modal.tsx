@@ -31,6 +31,7 @@ type FormState = {
   time: string;
   place: string;
   type: string;
+  link: string;
 };
 
 type FieldErrors = Partial<Record<keyof FormState, string>> & {
@@ -64,6 +65,21 @@ function validate(form: FormState): FieldErrors {
   const place = form.place.trim();
   if (!place) errors.place = "Required.";
   else if (place.length < 2) errors.place = "That doesn't look like a location.";
+
+  // Optional, but a half-typed link is worse than none: it would render as a
+  // dead anchor on the card.
+  const link = form.link.trim();
+  if (link) {
+    let parsed: URL | null = null;
+    try {
+      parsed = new URL(link);
+    } catch {
+      parsed = null;
+    }
+    if (!parsed || (parsed.protocol !== "http:" && parsed.protocol !== "https:")) {
+      errors.link = "Use a full link starting with http:// or https://";
+    }
+  }
 
   return errors;
 }
@@ -105,6 +121,7 @@ export default function SubmitEventModal({
     time: event?.time ?? "",
     place: event?.place ?? "",
     type: event?.type ?? "Social",
+    link: event?.link ?? "",
   });
 
   function set(field: keyof FormState, value: string) {
@@ -184,6 +201,7 @@ export default function SubmitEventModal({
       time: form.time.trim(),
       place: form.place.trim(),
       type: form.type,
+      link: form.link.trim() || null,
       banner_url: bannerUrl,
     };
 
@@ -325,6 +343,17 @@ export default function SubmitEventModal({
                   <option key={t}>{t}</option>
                 ))}
               </select>
+            </Field>
+
+            <Field label="Related link (optional)" error={fieldErrors.link}>
+              <input
+                value={form.link}
+                onChange={(e) => set("link", e.target.value)}
+                placeholder="e.g. https://instagram.com/p/..."
+                inputMode="url"
+                aria-invalid={!!fieldErrors.link}
+                className="input-style"
+              />
             </Field>
 
             <Field label="Banner (optional)" error={fieldErrors.banner}>
